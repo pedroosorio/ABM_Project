@@ -18,6 +18,13 @@
    {"value":100, "producer":4},
    {"value":100, "producer":5}
  ],
+"SectorClassification":[
+   {"type":"internal", "producer":1},
+   {"type":"internal", "producer":2},
+   {"type":"internal", "producer":3},
+   {"type":"internal", "producer":4},
+   {"type":"internal", "producer":5}
+ ],
  "InputStore":[
    {"simbol":"E", "amount":2, "producer":1},
    {"simbol":"F", "amount":4, "producer":1},

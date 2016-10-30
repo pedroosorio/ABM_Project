@@ -748,16 +748,21 @@ type SuperSystem
           # Test if the numeraire is negative before the application of taxes
           if(this.P.vec[prod].Numeraire<0)
             this.DeleteProducer(this.P.vec[prod].ID)
+            #Dont die, ask for credit
           else
-            tax = this.P.vec[prod].numeraireToBeTaxed*this.C.taxPercentage;
-            #Multiply the taxable amount for the pre-regultaed taxing percentage of the controller
-            if(tax>0.0) #if the tax is positive, apply taxing
-              this.P.vec[prod].Numeraire -= tax;
-              @printf(f,"taxes(%d,%d)=%.3f%s",this.P.vec[prod].ID,period,tax,"\n");
-            end
-            #A producer can also be deleted if its numeraire becomes negative after taxes
-            if(this.P.vec[prod].Numeraire<0)
-              this.DeleteProducer(this.P.vec[prod].ID)
+            if(this.P.vec[prod].Internal) #Only apply taxes to internal sector
+              tax = this.P.vec[prod].numeraireToBeTaxed*this.C.taxPercentage;
+              #Multiply the taxable amount for the pre-regultaed taxing percentage of the controller
+              if(tax>0.0) #if the tax is positive, apply taxing
+                this.P.vec[prod].Numeraire -= tax;
+                @printf(f,"taxes(%d,%d)=%.3f%s",this.P.vec[prod].ID,period,tax,"\n");
+              end
+              #A producer can also be deleted if its numeraire becomes negative after taxes
+              if(this.P.vec[prod].Numeraire<0)
+                this.DeleteProducer(this.P.vec[prod].ID)
+              else
+                @printf(f,"numeraires(%d,%d)=%.3f%s",this.P.vec[prod].ID,period,this.P.vec[prod].Numeraire,"\n");
+              end
             else
               @printf(f,"numeraires(%d,%d)=%.3f%s",this.P.vec[prod].ID,period,this.P.vec[prod].Numeraire,"\n");
             end

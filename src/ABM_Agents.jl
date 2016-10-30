@@ -79,7 +79,7 @@ type Producer
   transferToInputStore::Function
   keepItems::Function
 
-  function Producer(Numeraire = 0.0,id_ = 0,internal=true)
+  function Producer(Numeraire = 0.0,internal=true, id_ = 0)
     this = new()
     this.Numeraire = Numeraire
     this.InputStore = List{Symbol}(Symbol)
@@ -349,13 +349,42 @@ function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float
     end
   end
 
+  try
+    Classifications = SystemData["SectorClassification"]
+  catch error
+    if isa(error, KeyError)
+      println("No SectorClassification at ",systemConfigFileName," ... exiting")
+      quit()
+    end
+  end
+
+  Classifications = SystemData["SectorClassification"]
   Numeraires = SystemData["Numeraire"]
   Num_Assigned = false
+  internal_sector = true
+
+  Current_Numeraire = 0;
+  Current_ID = 0;
+  Current_Sec_Internal = internal_sector
+
   for i = 1:N
     for tuple in Numeraires
       if(tuple["producer"]<=N && tuple["producer"]==i)
-        ListP.addContent(Producer(tuple["value"],i))   #id; Numeraire; State;
+        Current_Numeraire = tuple["value"]
+        Current_ID = i
         Num_Assigned = true
+      end
+    end
+
+    for tuple in Classifications
+      if(Num_Assigned && tuple["producer"]==Current_ID)
+        if (tuple["type"]=="internal")
+          Current_Sec_Internal = true
+        elseif (tuple["type"]=="external")
+          Current_Sec_Internal = false
+        else
+          Current_Sec_Internal = true
+        end
       end
     end
 
@@ -363,6 +392,7 @@ function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float
         ListP.addContent(Producer(_Numeraire))
         println("  † No Numeraire Initialization for Producer$i")
     else
+        ListP.addContent(Producer(Current_Numeraire,Current_Sec_Internal,Current_ID))   #id; Numeraire; State;
         Num_Assigned = false
     end
   end
@@ -503,7 +533,14 @@ function CheckSys(C::Controller,P::List{Producer}, R::List{List{Rule}},period,f,
   if(toConsole) println("\n→ Producers Info:") end
   for i=1:P.getSize()
     if(P.vec[i].Enabled)
-        if(toConsole) println("► Producer $i Info:"); end
+        if(toConsole) println("► Producer $i Info [",P.vec[i].ID,"]:"); end
+        if(toConsole)
+          if (P.vec[i].Internal==true)
+            println("► From Internal Sector.")
+          else
+            println("► From External Sector.")
+          end
+        end
         if(toConsole) println("    ♦Numeraire: ",P.vec[i].Numeraire) end  #Imprime o numerário do produtor P.vec[i]
         if(period==1) @printf(f,"numeraires_0(%d)=%d\n",i,P.vec[i].Numeraire); end  #Output to file numerário do produtor P.vec[i]
         if(toConsole) println("    ♦InputStore [",length(P.vec[i].InputStore.vec),"]:"); end
