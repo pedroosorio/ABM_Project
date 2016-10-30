@@ -1,4 +1,4 @@
-include("ABM_Transactions.jl") #includes Symbol,Rule and Generic List types
+include("ABM_Types.jl") #includes Symbol,Rule and Generic List types
 using JSON
 
 #AGENTS OF MODEL
