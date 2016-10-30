@@ -63,6 +63,8 @@ for period = 1:K
   S.ApplyTaxes(f,period)
   #@printf(f,"@PERIOD_END%s","\n");
 
+  #S.ProcessCredit(f,period);
+
   CheckSys(S.C,S.P,S.V,period+1,f,false,S); #Prints to output file the stores values of each producer
   #period+1 and not period because the minimum array index in Scilab is 1
 end
@@ -82,4 +84,6 @@ quit()
 #2. In the second step, all producers make offers for production and price of possible rules output.
 #3. In the third step, all producers decide what to buy and try to buy what they decided; the controller
 # buys the products it commanded, up to the numbers set for the cycle.
+#4. In the fourth step, the controller applies taxed to all producers.
+#5. In the fifth step, the credit is processed between lenders and borrowers
 ###################################################################################

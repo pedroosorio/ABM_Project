@@ -58,13 +58,25 @@ end
 ###################################################################################
 #PRODUCER AGENT
 type Producer
-  Numeraire::Float64
-  InputStore::List{Symbol}
-  OutputStore::List{Symbol}
-  Enabled::Bool
-  ID::Int64
-  numeraireToBeTaxed::Float64
-  Internal::Bool
+  ##############################
+  ########### DATA #############
+
+  Numeraire::Float64 #Current numeraire of the agent
+  Credits::List{CreditContract} #List of credits contracted
+  Savings::Float64 #Numeraire in savings
+  Investments::Float64 #Numeraire in investments
+  Assets::Float64  #Numeraire in assets
+
+  InputStore::List{Symbol} # Input store of the agent
+  OutputStore::List{Symbol} # Output store of the agent
+
+  Enabled::Bool # Flags if the agent is alive or not
+  ID::Int64 # ID of the agent
+  Internal::Bool # Sector of operation of the agent
+  numeraireToBeTaxed::Float64 #Numeraire to be taxed (profit)
+
+  ##############################
+  ######### FUNCTIONS ##########
   existsInInputStore::Function
   existsInInputStoreItem::Function
   getSymbolAmount::Function
