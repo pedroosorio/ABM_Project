@@ -4,6 +4,7 @@
   * [x] Single configuration file, indexed by id   
   * [x] - Output file with scilab syntax   
   * [x] - Port to Julia 0.4      
+  * [x] - Port to Julia 0.5      
 
 * New system capabilities
   * [x] - Price variation (missing actuation)   

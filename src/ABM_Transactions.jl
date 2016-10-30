@@ -36,7 +36,6 @@ end
 #Initialization of B List
 function InitB(B::List{BList_Cell}, V::List{List{Rule}})
   b_already = false #To flag the existance of the consequent in the B list
-  TempCell
 
   for i=1:length(V.vec) #Run through every producer set of rules
     for j=1:length(V.vec[i].vec) #Run through every rule of producer i

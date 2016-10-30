@@ -8,12 +8,12 @@ SystemID = "TestD0"; #System Identifier (Simulation ID)
 println("     ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼")
 println("Agent-Based Modelling Simulator");
 time = now();
-println("VERSION 0.6.3 : Exec @ $time");
+println("Exec @ $time");
 println("Running the following test: $SystemID");
 println("     ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼ \n")
 
-outputFileName = string("./outputs/simulation.",SystemID,".txt");
-systemConfigFileName = string("./configs/System.",SystemID,".json");
+outputFileName = string("../outputs/simulation.",SystemID,".txt");
+systemConfigFileName = string("../configs/System.",SystemID,".json");
 
 S,K,N= SuperSystem(systemConfigFileName);
 println("   ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼")
