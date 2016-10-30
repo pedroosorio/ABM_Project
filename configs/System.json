@@ -1,0 +1,86 @@
+{
+ "Simulation":[
+   {"k":5, "n":5}
+ ],
+ "ImpulsePerturbations":[
+   {"producer":1, "rule":1, "startperiod":1, "endperiod":1, "percentage":1}
+  ],
+  "ControllerGoals":[
+   {"simbol":"D", "Ymin":5, "Ynom":10,"price":16.75}
+ ],
+ "ControllerParameters":[
+   {"taxingPercentage":1}
+ ],
+"Numeraire":[
+   {"value":100, "producer":1},
+   {"value":100, "producer":2},
+   {"value":100, "producer":3},
+   {"value":100, "producer":4},
+   {"value":100, "producer":5}
+ ],
+ "InputStore":[
+   {"simbol":"E", "amount":2, "producer":1},
+   {"simbol":"F", "amount":4, "producer":1},
+   {"simbol":"E", "amount":92, "producer":2},
+   {"simbol":"F", "amount":4, "producer":2},
+   {"simbol":"E", "amount":42, "producer":3},
+   {"simbol":"F", "amount":4, "producer":3},
+   {"simbol":"A", "amount":20, "producer":3},
+   {"simbol":"B", "amount":30, "producer":3},
+   {"simbol":"E", "amount":2, "producer":4},
+   {"simbol":"F", "amount":4, "producer":4},
+   {"simbol":"E", "amount":42, "producer":5},
+   {"simbol":"F", "amount":4, "producer":5}
+
+ ],
+ "OutputStore":[
+
+ ],
+ "Pricing":[
+	{"symbol":"A", "price":0.625},
+	{"symbol":"B", "price":3.4166666666666667},
+	{"symbol":"D", "price":16.75},
+	{"symbol":"E", "price":1.0},
+	{"symbol":"F", "price":2.625}
+ ],
+ "Producer1":[
+   {"instring":"*", "inamounts":"0", "outstring":"A", "outamounts":1,
+    "multi":1,"type":"a","min":10,"nom":20,"max":20},
+	{"instring":"E", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":1,"nom":2,"max":2},
+	{"instring":"F", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":2,"nom":4,"max":4}
+ ],
+ "Producer2":[
+   {"instring":"E", "inamounts":"3", "outstring":"B", "outamounts":1,
+    "multi":1,"type":"a","min":15,"nom":30,"max":30},
+	{"instring":"E", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":1,"nom":2,"max":2},
+	{"instring":"F", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":2,"nom":4,"max":4}
+ ],
+ "Producer3":[
+   {"instring":"A,B,E", "inamounts":"2,3,4", "outstring":"D", "outamounts":1,
+    "multi":1,"type":"a","min":5,"nom":10,"max":10},
+	{"instring":"E", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":1,"nom":2,"max":2},
+	{"instring":"F", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":2,"nom":4,"max":4}
+ ],
+ "Producer4":[
+   {"instring":"*", "inamounts":"0", "outstring":"E", "outamounts":1,
+    "multi":1,"type":"a","min":90,"nom":180,"max":180},
+	{"instring":"E", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":1,"nom":2,"max":2},
+	{"instring":"F", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":2,"nom":4,"max":4}
+ ],
+ "Producer5":[
+   {"instring":"E", "inamounts":"2", "outstring":"F", "outamounts":1,
+    "multi":1,"type":"a","min":10,"nom":20,"max":20},
+	{"instring":"E", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":1,"nom":2,"max":2},
+	{"instring":"F", "inamounts":"1", "outstring":"''", "outamounts":0,
+    "multi":1,"type":"d","min":2,"nom":4,"max":4}
+ ]
+}
