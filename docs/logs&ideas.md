@@ -1,22 +1,22 @@
-###Setor externo 
-Não está sujeito a taxas. [Adicionar flag de externo ou interno na criaçao dos agentes, aplica taxas se for interno]
+##Setor externo 
+NÃ£o estÃ¡ sujeito a taxas. [Adicionar flag de externo ou interno na criaÃ§ao dos agentes, aplica taxas se for interno]
 
-#Para organizações   
+##Para organizaÃ§Ãµes   
 Produtor de Regras :    
-* A troco de numerário produz uma regra (máquina) nova.
-* A troco de numerário aumenta os níveis de produção de uma regra (máquina).   
+* A troco de numerÃ¡rio produz uma regra (mÃ¡quina) nova.
+* A troco de numerÃ¡rio aumenta os nÃ­veis de produÃ§Ã£o de uma regra (mÃ¡quina).   
 								
 Criar tipo 'CreditContract':
 * Montante
 * Prazo de Pagamento
 * Juro
 * Montante Vencido
-* Client   
-#####Mesma estrutura no Bank
+* Client      
+* **Mesma estrutura no Bank**
 
-Solvência ? Nao emprestar.
+SolvÃªncia ? Nao emprestar.
 
-Criar variável 'Savings_Investment': (Numerário de com poupança/investimentos de um agente).
+Criar variÃ¡vel 'Savings_Investment': (NumerÃ¡rio de com poupanÃ§a/investimentos de um agente).
 
-Criar tipo 'Bank' que fornece o crédito.
+Criar tipo 'Bank' que fornece o crÃ©dito.
 No fim do periodo, percorre se os creditos de contrato e recebe o pagamento com juros do montante.
