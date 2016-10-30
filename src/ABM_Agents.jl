@@ -1,10 +1,12 @@
 include("ABM_Types.jl") #includes Symbol,Rule and Generic List types
 using JSON
 
-#AGENTS OF MODEL
 ###################################################################################
 ###################################################################################
 #CONTROLLER AGENT
+
+############### CONTROLLER TYPE ###############
+###############################################
 type Controller
   taxPercentage::Float64 # Taxes could be a list of taxes, indexed by Producer
   Goals::List{ControllerGoal}
@@ -18,9 +20,11 @@ type Controller
     return this
   end
 end
-###################################################################################
-###################################################################################
-#INIT CONTROLLER AGENT METHOD
+###############################################
+###############################################
+
+############### INITC FUNCTION ################
+###############################################
 function InitC(C::Controller,Taxes,Configuration,systemConfigFileName)
   C.taxPercentage = Taxes;
   # looks for controller goals in JSON format in Agents.json file
@@ -63,14 +67,21 @@ function InitC(C::Controller,Taxes,Configuration,systemConfigFileName)
 
   println("▬ Controller Successfuly Initialized\n")
 end
+###############################################
+###############################################
+
+###################################################################################
+###################################################################################
+
 
 ###################################################################################
 ###################################################################################
 #PRODUCER AGENT
-type Producer
-  ##############################
-  ########### DATA #############
 
+type Producer 
+  
+  ########### DATA #############
+  ##############################
   Numeraire::Float64 #Current numeraire of the agent
   Credits::List{CreditContract} #List of credits contracted
   Savings::Float64 #Numeraire in savings
@@ -84,9 +95,11 @@ type Producer
   ID::Int64 # ID of the agent
   Internal::Bool # Sector of operation of the agent
   numeraireToBeTaxed::Float64 #Numeraire to be taxed (profit)
-
   ##############################
+  ##############################
+  
   ######### FUNCTIONS ##########
+  ##############################
   existsInInputStore::Function
   existsInInputStoreItem::Function
   getSymbolAmount::Function
@@ -100,7 +113,9 @@ type Producer
   addConsequentInputStore::Function
   transferToInputStore::Function
   keepItems::Function
-
+  ##############################
+  ##############################
+  
   function Producer(Numeraire = 0.0,internal=true, id_ = 0)
     this = new()
     this.Numeraire = Numeraire
@@ -110,6 +125,7 @@ type Producer
     this.ID = id_
     this.Internal = internal
 
+    ######################################################
     ######################################################
     this.existsInInputStore = function(pre)
       Amounts_ = List{Int64}(Int64)
@@ -139,6 +155,10 @@ type Producer
       end
     end
     ######################################################
+    ######################################################
+    
+    ######################################################
+    ######################################################
     this.existsInInputStoreItem = function(symbol,amount)
       quant = 0;
       hasItem = false
@@ -159,6 +179,10 @@ type Producer
       end
     end
     ######################################################
+    ######################################################
+    
+    ######################################################
+    ######################################################
     this.getSymbolAmount = function(symbol)
       quantityFound = 0;
 
@@ -171,6 +195,10 @@ type Producer
       #println(this.ID, "still has $quantityFound items of $symbol")
       return quantityFound;
     end
+    ######################################################
+    ######################################################
+    
+    ######################################################
     ######################################################
     this.deletePrecedentInputStore = function(pre,quant)
       if(pre.vec[1].Symbol=="*" && length(pre.vec)==1)
@@ -191,12 +219,20 @@ type Producer
       end
     end
     ######################################################
+    ######################################################
+    
+    ######################################################
+    ######################################################
     this.deleteOutputStore = function(item,quant)
       this.OutputStore.vec[item].Amount -= quant
       if(this.OutputStore.vec[item].Amount == 0)
         this.OutputStore.deleteContent(item)
       end
     end
+    ######################################################
+    ######################################################
+    
+    ######################################################
     ######################################################
     this.setToProduction = function(Rules,item,quant)
       for rule=1:length(Rules.vec[this.ID].vec)
@@ -214,6 +250,10 @@ type Producer
       end
     end
     ######################################################
+    ######################################################
+    
+    ######################################################
+    ######################################################
     this.addConsequentInputStore = function(consq,quant)
       product_found = false
       for prod=1:length(this.InputStore.vec)
@@ -227,6 +267,10 @@ type Producer
         this.InputStore.addContent(Symbol(consq.Symbol,consq.Amount*quant))
       end
     end
+    ######################################################
+    ######################################################
+    
+    ######################################################
     ######################################################
     this.transferToInputStore = function(symbol,quant)
       product_found = false
@@ -251,6 +295,10 @@ type Producer
       end
     end
     ######################################################
+    ######################################################
+    
+    ######################################################
+    ######################################################
     this.keepItems = function(pre,consq,quant)
       product_found = false
       this.deletePrecedentInputStore(pre,quant);
@@ -266,6 +314,10 @@ type Producer
       end
     end
     ######################################################
+    ######################################################
+    
+    ######################################################
+    ######################################################
     this.addConsequentOutputStore = function(consq,quant)
       product_found = false
       for prod=1:length(this.OutputStore.vec)
@@ -279,6 +331,10 @@ type Producer
         this.OutputStore.addContent(Symbol(consq.Symbol,consq.Amount*quant,0))
       end
     end
+    ######################################################
+    ######################################################
+    
+    ######################################################
     ######################################################
     this.atomicSale = function(Rules,Producers,consq,quant,producer,System,period) #this intends to an agent buy quant times the
       #consq item, by request, atomically
@@ -335,12 +391,15 @@ type Producer
 
     end
     ######################################################
+    ######################################################
     return this
   end
 end
 ###################################################################################
 ###################################################################################
 
+############### INITP FUNCTION ################
+###############################################
 function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float64, K::Int64,SystemData,systemConfigFileName)
   #detect how many producers are described in rules part of System.json
   producerExists = true;
@@ -540,9 +599,12 @@ function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float
 
   return N
 end
+###############################################
+###############################################
 
-###################################################################################
-###################################################################################
+
+############# CHECKSYS FUNCTION ###############
+###############################################
 function CheckSys(C::Controller,P::List{Producer}, R::List{List{Rule}},period,f,toConsole,S)
   if(toConsole) println("↑ Displaying Current SYSTEM information ...") end
   # Print Controller Information
@@ -612,5 +674,8 @@ function CheckRules(R::List{List{Rule}})
   end
   println("\n▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n")
 end
+###############################################
+###############################################
+
 ###################################################################################
 ###################################################################################
