@@ -1,0 +1,325 @@
+{
+  "System": {
+    "SimulationProperties": [
+      {
+        "K": 5,
+        "N": 5
+      }
+    ],
+    "Pricing": [
+      {
+        "Symbol": "A",
+        "Price": 0.625
+      },
+      {
+        "Symbol": "B",
+        "Price": 3.4166666666666665
+      },
+      {
+        "Symbol": "D",
+        "Price": 16.75
+      },
+      {
+        "Symbol": "E",
+        "Price": 1
+      },
+      {
+        "Symbol": "F",
+        "Price": 2.625
+      }
+    ]
+  },
+  "Controller": {
+    "ControllerParameters": [
+      {
+        "TaxingPercentage": 1
+      }
+    ],
+    "ControllerGoals": [
+      {
+        "Symbol": "D",
+        "Min": 5,
+        "Nom": 10,
+        "Max": 10,
+        "Price": 16.75
+      }
+    ]
+  },
+  "Producers": [
+    {
+      "Id": 1,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "*",
+          "InAmounts": "0",
+          "OutString": "A",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 10,
+          "Nom": 20,
+          "Max": 20
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 2,
+          "Producer": 1
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4,
+          "Producer": 1
+        }
+      ],
+      "Ouput_Store": []
+    },
+    {
+      "Id": 2,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "E",
+          "InAmounts": "3",
+          "OutString": "B",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 15,
+          "Nom": 30,
+          "Max": 30
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 92,
+          "Producer": 2
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4,
+          "Producer": 2
+        }
+      ],
+      "Ouput_Store": []
+    },
+    {
+      "Id": 3,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "A,B,E",
+          "InAmounts": "2,3,4",
+          "OutString": "D",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 5,
+          "Nom": 10,
+          "Max": 10
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 42,
+          "Producer": 3
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4,
+          "Producer": 3
+        },
+        {
+          "Symbol": "A",
+          "Amount": 20,
+          "Producer": 3
+        },
+        {
+          "Symbol": "B",
+          "Amount": 30,
+          "Producer": 3
+        }
+      ],
+      "Ouput_Store": []
+    },
+    {
+      "Id": 4,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "*",
+          "InAmounts": "0",
+          "OutString": "E",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 90,
+          "Nom": 180,
+          "Max": 180
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 2,
+          "Producer": 4
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4,
+          "Producer": 4
+        }
+      ],
+      "Ouput_Store": []
+    },
+    {
+      "Id": 5,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "E",
+          "InAmounts": "2",
+          "OutString": "F",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 10,
+          "Nom": 20,
+          "Max": 20
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 42,
+          "Producer": 5
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4,
+          "Producer": 5
+        }
+      ],
+      "Ouput_Store": []
+    }
+  ]
+}
