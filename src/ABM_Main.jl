@@ -2,7 +2,7 @@ include("ABM_System.jl")
 ###################################################################################
 #Defines system's initialization file name : System.SystemID.json
 #Defines system's output file name : simulation.SystemID.txt
-SystemID = "TestD0"; #System Identifier (Simulation ID)
+SystemID = "new"; #System Identifier (Simulation ID)
 ###################################################################################
 #Main Simulation Program
 println("     ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼")

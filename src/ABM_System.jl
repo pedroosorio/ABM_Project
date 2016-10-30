@@ -39,60 +39,71 @@ type SuperSystem
     this = new()
     cd(dirname(Base.source_path())); #Change current working directory
     completePathCfgFile = string("./",systemConfigFileName);
-    SystemData = JSON.parsefile(completePathCfgFile) #Parse System.json to get system info
-    println("↓ Parsing System JSON Files ...")
-
-    try
-      Parameters = SystemData["Simulation"]
-    catch error
-      if isa(error, KeyError)
-        println("No Simulation Parameters at ",systemConfigFileName," ... exiting")
-        quit()
-      end
-    end
-
-    Parameters = SystemData["Simulation"]
-    this.K = 1 #Default Values
+    Configuration = JSON.parsefile(completePathCfgFile) #Parse System.json to get system info
+    println("↓ Parsing System JSON Config File ...")
+    #Default Values
+    this.K = 1
     this.N = 5
-    for tuple in Parameters
-      this.K = tuple["k"]
-      this.N = tuple["n"]
-    end
 
-    #println("▬ System Parameters Successfuly Initialized\n")
-    #println("→ Algorithm Parameters: ",this.K," Periods & ",this.N," Producers\n");
-    #println("▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n")
     try
-      Prices = SystemData["Pricing"]
-    catch error
-      if isa(error, KeyError)
-        println("No Pricing Parameters at ",systemConfigFileName," ... exiting")
+      SYSTEM_DATA = Configuration["System"] #Get System Block
+      try
+        SIM_PROPERTIES = SYSTEM_DATA["SimulationProperties"] #Get sim properties
+        try
+          SIM_PROPERTIES = SYSTEM_DATA["SimulationProperties"] #Get sim properties
+          for tuple in SIM_PROPERTIES
+            this.K = tuple["K"]
+            this.N = tuple["N"]
+          end
+          try
+            PRICES = SYSTEM_DATA["Pricing"]
+            this.PricingList = List{StandardPriceCell}(StandardPriceCell)
+            this.PricingList.deleteList();
+            for tuple in Prices
+              _priceList = List{Float64}(Float64);
+              for count=1:this.K
+                _priceList.addContent(tuple["Price"]);
+              end
+              symb = tuple["Symbol"]
+              this.PricingList.addContent(StandardPriceCell(symb,_priceList));
+              _priceList.deleteList();
+            end
+          catch error
+            if isa(error, KeyError)
+            println("No Pricing data or Errors in ",systemConfigFileName," ... exiting")
+            quit()
+            end
+          end
+        catch error
+          if isa(error, KeyError)
+          println("No SimulationProperties or Errors data in ",systemConfigFileName," ... exiting")
+          quit()
+          end
+        end
+      catch error
+        if isa(error, KeyError)
+        println("No SimulationProperties or Errors data in ",systemConfigFileName," ... exiting")
+        quit()
+        end
+      end
+      catch error
+        if isa(error, KeyError)
+        println("No System data in ",systemConfigFileName," ... exiting")
         quit()
       end
     end
 
-    Prices = SystemData["Pricing"];
-    this.PricingList = List{StandardPriceCell}(StandardPriceCell)
-    this.PricingList.deleteList();
-
-
-    for tuple in Prices
-      _priceList = List{Float64}(Float64);
-      for count=1:this.K
-        _priceList.addContent(tuple["price"]);
-      end
-      symb = tuple["symbol"]
-      this.PricingList.addContent(StandardPriceCell(symb,_priceList));
-      _priceList.deleteList();
-    end
-
+    println("▬ System Parameters Successfuly Initialized\n")
+    println("→ Simulation Parameters: ",this.K," Periods & ",this.N," Producers\n");
+    println("▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n")
     #define Objects and read JSON configuration Files
     this.C = Controller();                    #Controller Object
     this.P = List{Producer}(Producer)         #List of Producers
     this.V = List{List{Rule}}(List{Rule})     #List of Rules per Producer
     this.B = List{BList_Cell}(BList_Cell)     #BList - with sales
-    InitC(this.C,1.0,SystemData,systemConfigFileName) #Initialize the Controller
-    this.N = InitP(this.P,this.V,0.0,this.K,SystemData,systemConfigFileName) #Initialize the Producers
+    InitC(this.C,1.0,Configuration,systemConfigFileName) #Initialize the Controller
+    quit()
+    this.N = InitP(this.P,this.V,0.0,this.K,Configuration,systemConfigFileName) #Initialize the Producers
     this.ActiveProducers = this.N;
     InitB(this.B,this.V) #Initialize the B* List
     #CheckSys(this.C,this.P,this.V) #Print Current System State

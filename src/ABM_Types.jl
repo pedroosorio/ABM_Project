@@ -100,11 +100,15 @@ type ControllerGoal
   Symbol::AbstractString
   Ymin::Int64
   Ynom::Int64
-  function ControllerGoal(symb, min, nom)
+  Ymax::Int64
+  DesiredPrice::Float64
+  function ControllerGoal(symb, min, nom,max,price)
     this = new()
     this.Symbol = symb;
     this.Ymin = min;
     this.Ynom = nom;
+    this.Ymax = max;
+    this.DesiredPrice = price;
     return this;
   end
 end

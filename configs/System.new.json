@@ -2,7 +2,7 @@
   "System": {
     "SimulationProperties": [
       {
-        "K": 5,
+        "K": 10,
         "N": 5
       }
     ],

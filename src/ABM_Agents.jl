@@ -21,35 +21,45 @@ end
 ###################################################################################
 ###################################################################################
 #INIT CONTROLLER AGENT METHOD
-function InitC(C::Controller,Taxes,SystemData,systemConfigFileName)
+function InitC(C::Controller,Taxes,Configuration,systemConfigFileName)
   C.taxPercentage = Taxes;
   # looks for controller goals in JSON format in Agents.json file
   println("↓ Parsing Controller Data ...")
   try
-    ControllerData = SystemData["ControllerGoals"]
+    CONTROLLER_DATA = Configuration["Controller"]
+    try
+      CONTROLLER_GOALS = CONTROLLER_DATA["ControllerGoals"]
+      for tuple in CONTROLLER_GOALS
+        C.Goals.addContent(ControllerGoal(tuple["Symbol"], tuple["Min"],tuple["Nom"],tuple["Max"],tuple["Price"]))
+        C.Prices.addContent(tuple["Price"])
+      end
+      try
+        CONTROLLER_PARAMETERS = CONTROLLER_DATA["ControllerParameters"]
+        for tuple in CONTROLLER_PARAMETERS
+          C.taxPercentage = tuple["TaxingPercentage"];
+        end
+      catch error
+        if isa(error, KeyError)
+          println("No ControllerParameters or Errors at ",systemConfigFileName," ... exiting")
+          quit()
+        end
+      end
+    catch error
+      if isa(error, KeyError)
+        println("No ControllerGoals or Error at ",systemConfigFileName," ... exiting")
+        quit()
+      end
+    end
   catch error
     if isa(error, KeyError)
-      println("No ControllerGoals at ",systemConfigFileName," ... exiting")
-      quit()
+    println("No Controller data in ",systemConfigFileName," ... exiting")
+    quit()
     end
   end
 
-  controllerParameters = SystemData["ControllerParameters"];
-  for tuple in controllerParameters
-    C.taxPercentage = tuple["taxingPercentage"];
-  end
-
-  if(C.taxPercentage<0.0) C.taxPercentage = 0.0
-  end
-
-  if(C.taxPercentage>1.0) C.taxPercentage = 1.0
-  end
-
-  ControllerData = SystemData["ControllerGoals"]
-  for tuple in ControllerData
-    C.Goals.addContent(ControllerGoal(tuple["simbol"], tuple["Ymin"],tuple["Ynom"]))
-    C.Prices.addContent(tuple["price"])
-  end
+  #Correct possible mistakes in percentage settings
+  if(C.taxPercentage<0.0) C.taxPercentage = 0.0 end
+  if(C.taxPercentage>1.0) C.taxPercentage = 1.0 end
 
   println("▬ Controller Successfuly Initialized\n")
 end
