@@ -84,10 +84,9 @@ type Producer
   ##############################
   Numeraire::Float64 #Current numeraire of the agent
   Credits::List{CreditContract} #List of credits contracted
-  Savings::Float64 #Numeraire in savings
-  Investments::Float64 #Numeraire in investments
-  Assets::Float64  #Numeraire in assets
-
+  Assets::Float64  #Assets as numeraire
+  Liabilities::Float64  #Liabilities as numeraire
+   
   InputStore::List{Symbol} # Input store of the agent
   OutputStore::List{Symbol} # Output store of the agent
 
@@ -121,6 +120,7 @@ type Producer
     this.Numeraire = Numeraire
     this.InputStore = List{Symbol}(Symbol)
     this.OutputStore = List{Symbol}(Symbol)
+    this.Credits = List{CreditContract}(CreditContract)
     this.Enabled = true
     this.ID = id_
     this.Internal = internal
@@ -679,3 +679,28 @@ end
 
 ###################################################################################
 ###################################################################################
+
+
+###################################################################################
+###################################################################################
+#BANK AGENT
+
+################## BANK TYPE ##################
+###############################################
+type Bank
+  ID::Int64
+  Assets::Float64  #Assets as numeraire
+  Liabilities::Float64  #Liabilities as numeraire
+  Credits::List{CreditContract} #List of credits done by the bank
+  
+  function Bank(id,credits::List{CreditContract}, assets = 0.0, liabilities = 0.0)
+    this = new();
+    id = ID;
+    Assets = assets;
+    Liabilities = liabilities;
+    Credits = credits;
+    return this
+  end
+end
+###############################################
+###############################################
