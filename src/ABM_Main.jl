@@ -27,9 +27,9 @@ for item=1:length(S.PricingList.vec)
   @printf(f,"priceSymbols(%d)=\"%s\"\n",item,S.PricingList.vec[item].Symbol); #Sintaxe do Scilab
 end
 
-CheckSys(S.C,S.P,S.V,1,f,false,S); #Prints to output file the stores values of each producer STARTING POINT
+#CheckSys(S.C,S.P,S.V,1,f,false,S); #Prints to output file the stores values of each producer STARTING POINT
 
-#CheckSys(S.C,S.P,S.V,1,f,true,S); #Prints to output file the stores values of each producer STARTING POINT
+CheckSys(S.C,S.P,S.V,1,f,true,S); #Prints to output file the stores values of each producer STARTING POINT
 #CheckRules(S.V)
 
 println("   ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼")

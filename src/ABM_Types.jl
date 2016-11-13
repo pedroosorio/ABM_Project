@@ -161,12 +161,12 @@ type CreditContract
   ClientID::Int64
   LenderID::Int64
 
-  function CreditContract(amount,interest_rates,pay_time,client_id,lender_id)
+  function CreditContract(amount,interest_rates,pay_time,amount_paid,client_id,lender_id)
     this = new();
     this.Amount = amount;
     this.InterestRates = interest_rates;
     this.CreditPayTime = pay_time;
-    this.AmountPaid = 0.0;
+    this.AmountPaid = amount_paid;
     this.ClientID = client_id;
     this.LenderID = lender_id;
     return this;

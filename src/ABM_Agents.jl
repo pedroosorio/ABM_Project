@@ -627,6 +627,32 @@ function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float
           end
         end
 
+        #Read producer's Credits
+        try
+          CREDITS = tuple["Credits"];
+          for credit in CREDITS
+            try
+              amount = credit["Amount"];
+              interestRates = credit["InterestRates"];
+              creditPayTime = credit["CreditPayTime"];
+              amountPaid = credit["AmountPaid"];
+              lenderID = credit["LenderID"];
+              clientID = prod_id;
+              ListP.vec[prod_id].Credits.addContent(CreditContract(amount,interestRates,creditPayTime,amountPaid,clientID,lenderID))
+            catch error
+              if isa(error, KeyError)
+                println("Error in Credit definition at ",systemConfigFileName," in producer ",init_id," ... exiting");
+                quit()
+              end
+            end
+          end
+        catch error
+          if isa(error, KeyError)
+            println("No Credits at ",systemConfigFileName," in producer ",init_id," ... exiting")
+            quit()
+          end
+        end
+
         init_id = init_id+1
       end
   catch error
@@ -659,17 +685,17 @@ function CheckSys(C::Controller,P::List{Producer}, R::List{List{Rule}},period,f,
   if(toConsole) println("\n→ Producers Info:") end
   for i=1:P.getSize()
     if(P.vec[i].Enabled)
-        if(toConsole) println("► Producer $i Info [",P.vec[i].ID,"]:"); end
-        if(toConsole)
-          if (P.vec[i].Internal==true)
-            println("► From Internal Sector.")
-          else
-            println("► From External Sector.")
-          end
+      if(toConsole) println("► Producer $i Info [",P.vec[i].ID,"]:"); end
+      if(toConsole)
+        if (P.vec[i].Internal==true)
+          println("► From Internal Sector.")
+        else
+          println("► From External Sector.")
         end
-        if(toConsole) println("    ♦Numeraire: ",P.vec[i].Numeraire) end  #Imprime o numerário do produtor P.vec[i]
-        if(period==1) @printf(f,"numeraires_0(%d)=%d\n",i,P.vec[i].Numeraire); end  #Output to file numerário do produtor P.vec[i]
-        if(toConsole) println("    ♦InputStore [",length(P.vec[i].InputStore.vec),"]:"); end
+      end
+      if(toConsole) println("    ♦Numeraire: ",P.vec[i].Numeraire) end  #Imprime o numerário do produtor P.vec[i]
+      if(period==1) @printf(f,"numeraires_0(%d)=%d\n",i,P.vec[i].Numeraire); end  #Output to file numerário do produtor P.vec[i]
+      if(toConsole) println("    ♦InputStore [",length(P.vec[i].InputStore.vec),"]:"); end
       for j=1:length(P.vec[i].InputStore.vec)
         Simb = P.vec[i].InputStore.vec[j];
           if(toConsole) println("      ♦\"",Simb.Symbol,"\": ",Simb.Amount," units") end #Imprime as quantidades(Simb.Amount) do produto
@@ -678,12 +704,25 @@ function CheckSys(C::Controller,P::List{Producer}, R::List{List{Rule}},period,f,
 
       end
 
-        if(toConsole) println("    ♦OutputStore [",length(P.vec[i].OutputStore.vec),"]:"); end
+      if(toConsole) println("    ♦OutputStore [",length(P.vec[i].OutputStore.vec),"]:"); end
       for k=1:length(P.vec[i].OutputStore.vec)
         Simb = P.vec[i].OutputStore.vec[k];
-          if(toConsole) println("      ♦\"",Simb.Symbol,"\": ",Simb.Amount," units") end#Imprime as quantidades(Simb.Amount) do produto
+        if(toConsole) println("      ♦\"",Simb.Symbol,"\": ",Simb.Amount," units") end#Imprime as quantidades(Simb.Amount) do produto
         # Simb.Symbol do produtor P.vec[i], que estão na OutputStore
         @printf(f,"outputStore_%s(%d,%d)=%d\n",Simb.Symbol,i,period,Simb.Amount); #Sintaxe do Scilab
+      end
+
+      if(toConsole) println("    ♦Credits [",length(P.vec[i].Credits.vec),"]:"); end
+      for k=1:length(P.vec[i].Credits.vec)
+        if(toConsole)
+          println("      ♦ Credit Nº",k)
+          println("         Amount: ",P.vec[i].Credits.vec[k].Amount)
+          println("         InterestRates: ",P.vec[i].Credits.vec[k].InterestRates)
+          println("         CreditPayTime: ",P.vec[i].Credits.vec[k].CreditPayTime)
+          println("         AmountPaid: ",P.vec[i].Credits.vec[k].AmountPaid)
+          println("         ClientID: ",P.vec[i].Credits.vec[k].ClientID)
+          println("         LenderID: ",P.vec[i].Credits.vec[k].LenderID)
+        end
       end
     end
   end
