@@ -2,7 +2,7 @@
   "System": {
     "SimulationProperties": [
       {
-        "K": 10,
+        "K": 1,
         "N": 5
       }
     ],
@@ -21,7 +21,7 @@
       },
       {
         "Symbol": "E",
-        "Price": 1
+        "Price": 1.0
       },
       {
         "Symbol": "F",
@@ -88,16 +88,14 @@
       "Input_Store": [
         {
           "Symbol": "E",
-          "Amount": 2,
-          "Producer": 1
+          "Amount": 2
         },
         {
           "Symbol": "F",
-          "Amount": 4,
-          "Producer": 1
+          "Amount": 4
         }
       ],
-      "Ouput_Store": []
+      "Output_Store": []
     },
     {
       "Id": 2,
@@ -141,16 +139,14 @@
       "Input_Store": [
         {
           "Symbol": "E",
-          "Amount": 92,
-          "Producer": 2
+          "Amount": 92
         },
         {
           "Symbol": "F",
-          "Amount": 4,
-          "Producer": 2
+          "Amount": 4
         }
       ],
-      "Ouput_Store": []
+      "Output_Store": []
     },
     {
       "Id": 3,
@@ -194,26 +190,22 @@
       "Input_Store": [
         {
           "Symbol": "E",
-          "Amount": 42,
-          "Producer": 3
+          "Amount": 42
         },
         {
           "Symbol": "F",
-          "Amount": 4,
-          "Producer": 3
+          "Amount": 4
         },
         {
           "Symbol": "A",
-          "Amount": 20,
-          "Producer": 3
+          "Amount": 20
         },
         {
           "Symbol": "B",
-          "Amount": 30,
-          "Producer": 3
+          "Amount": 30
         }
       ],
-      "Ouput_Store": []
+      "Output_Store": []
     },
     {
       "Id": 4,
@@ -257,16 +249,14 @@
       "Input_Store": [
         {
           "Symbol": "E",
-          "Amount": 2,
-          "Producer": 4
+          "Amount": 2
         },
         {
           "Symbol": "F",
-          "Amount": 4,
-          "Producer": 4
+          "Amount": 4
         }
       ],
-      "Ouput_Store": []
+      "Output_Store": []
     },
     {
       "Id": 5,
@@ -310,16 +300,14 @@
       "Input_Store": [
         {
           "Symbol": "E",
-          "Amount": 42,
-          "Producer": 5
+          "Amount": 42
         },
         {
           "Symbol": "F",
-          "Amount": 4,
-          "Producer": 5
+          "Amount": 4
         }
       ],
-      "Ouput_Store": []
+      "Output_Store": []
     }
   ]
 }

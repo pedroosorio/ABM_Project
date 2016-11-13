@@ -78,15 +78,15 @@ end
 ###################################################################################
 #PRODUCER AGENT
 
-type Producer 
-  
+type Producer
+
   ########### DATA #############
   ##############################
   Numeraire::Float64 #Current numeraire of the agent
   Credits::List{CreditContract} #List of credits contracted
   Assets::Float64  #Assets as numeraire
   Liabilities::Float64  #Liabilities as numeraire
-   
+
   InputStore::List{Symbol} # Input store of the agent
   OutputStore::List{Symbol} # Output store of the agent
 
@@ -96,7 +96,7 @@ type Producer
   numeraireToBeTaxed::Float64 #Numeraire to be taxed (profit)
   ##############################
   ##############################
-  
+
   ######### FUNCTIONS ##########
   ##############################
   existsInInputStore::Function
@@ -114,7 +114,7 @@ type Producer
   keepItems::Function
   ##############################
   ##############################
-  
+
   function Producer(Numeraire = 0.0,internal=true, id_ = 0)
     this = new()
     this.Numeraire = Numeraire
@@ -156,7 +156,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.existsInInputStoreItem = function(symbol,amount)
@@ -180,7 +180,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.getSymbolAmount = function(symbol)
@@ -197,7 +197,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.deletePrecedentInputStore = function(pre,quant)
@@ -220,7 +220,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.deleteOutputStore = function(item,quant)
@@ -231,7 +231,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.setToProduction = function(Rules,item,quant)
@@ -251,7 +251,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.addConsequentInputStore = function(consq,quant)
@@ -269,7 +269,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.transferToInputStore = function(symbol,quant)
@@ -296,7 +296,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.keepItems = function(pre,consq,quant)
@@ -315,7 +315,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.addConsequentOutputStore = function(consq,quant)
@@ -333,7 +333,7 @@ type Producer
     end
     ######################################################
     ######################################################
-    
+
     ######################################################
     ######################################################
     this.atomicSale = function(Rules,Producers,consq,quant,producer,System,period) #this intends to an agent buy quant times the
@@ -400,201 +400,211 @@ end
 
 ############### INITP FUNCTION ################
 ###############################################
-function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float64, K::Int64,SystemData,systemConfigFileName)
-  #detect how many producers are described in rules part of System.json
-  producerExists = true;
-  producerID_ = 1;
-  N = 0;
-  while producerExists
-    try
-        producer = SystemData["Producer$producerID_"];
-    catch error
-      if isa(error, KeyError)
-        producerExists = false;
-        break;
-      end
-    end
-    N +=1;
-    producerID_+=1;
-  end
-  #init Producers
-  # looks for controller goals in JSON format in Agents.json file
-  println("↓ Parsing Producers Data ...")
-
+function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float64, K::Int64, N::Int64,SystemData,systemConfigFileName)
   try
-    Numeraires = SystemData["Numeraire"]
-  catch error
-    if isa(error, KeyError)
-      println("No Numeraire at ",systemConfigFileName," ... exiting")
-      quit()
-    end
-  end
-
-  try
-    Classifications = SystemData["SectorClassification"]
-  catch error
-    if isa(error, KeyError)
-      println("No SectorClassification at ",systemConfigFileName," ... exiting")
-      quit()
-    end
-  end
-
-  Classifications = SystemData["SectorClassification"]
-  Numeraires = SystemData["Numeraire"]
-  Num_Assigned = false
-  internal_sector = true
-
-  Current_Numeraire = 0;
-  Current_ID = 0;
-  Current_Sec_Internal = internal_sector
-
-  for i = 1:N
-    for tuple in Numeraires
-      if(tuple["producer"]<=N && tuple["producer"]==i)
-        Current_Numeraire = tuple["value"]
-        Current_ID = i
-        Num_Assigned = true
+      PRODUCERS = SystemData["Producers"];
+      initializedProducers = 0;
+      for tuple in PRODUCERS
+          initializedProducers = initializedProducers+1
       end
-    end
+      if(initializedProducers!=N)
+        println("Producers initialization error at ",systemConfigFileName,". Number of producers is mismatching ... exiting");
+        quit()
+      end
+      println("↓ Parsing Producers Data ...")
 
-    for tuple in Classifications
-      if(Num_Assigned && tuple["producer"]==Current_ID)
-        if (tuple["type"]=="internal")
-          Current_Sec_Internal = true
-        elseif (tuple["type"]=="external")
-          Current_Sec_Internal = false
-        else
-          Current_Sec_Internal = true
+      prod_id = 0;
+      prod_numeraire = 0;
+      prod_sector_internal = true;
+      init_id = 1;
+      for tuple in PRODUCERS
+        #Get producer ID
+        try
+          prod_id = tuple["Id"]
+          if(prod_id>N)
+            println("Error in ",systemConfigFileName," in producer ",init_id," ID (>N) ... exiting");
+            quit()
+          end
+        catch error
+          if isa(error, KeyError)
+            println("No ID at ",systemConfigFileName," in producer ",init_id,"... exiting");
+            quit()
+          end
         end
-      end
-    end
+        #Get producer Numeraire
+        try
+          prod_numeraire = tuple["Numeraire"];
+        catch error
+          if isa(error, KeyError)
+            println("No Numeraire at ",systemConfigFileName," in producer ",init_id,"... exiting");
+            quit()
+          end
+        end
+        #Get producer sector operation
+        try
+          temp = tuple["Sector"];
+          if(temp=="external" || temp=="External")
+            prod_sector_internal = false
+          else
+            prod_sector_internal = true
+          end
+        catch error
+          if isa(error, KeyError)
+            println("No Sector at ",systemConfigFileName," in producer ",init_id,"... exiting");
+            quit()
+          end
+        end
+        #Check if there is any producer with the same ID
+        for producer = 1:length(ListP.vec)
+          if(prod_id==ListP.vec[producer].ID)
+            println("Conflicting producer ID's at ",systemConfigFileName," ... exiting");
+            quit()
+          end
+        end
+        ListP.addContent(Producer(prod_numeraire,prod_sector_internal,prod_id))
 
-    if(!Num_Assigned)
-        ListP.addContent(Producer(_Numeraire))
-        println("  † No Numeraire Initialization for Producer$i")
-    else
-        ListP.addContent(Producer(Current_Numeraire,Current_Sec_Internal,Current_ID))   #id; Numeraire; State;
-        Num_Assigned = false
-    end
-  end
-
-  # First we will read the inputStore initialization for each producer
-  try
-    InputStoreData = SystemData["InputStore"]
-  catch error
-    if isa(error, KeyError)
-      println("No InputStore at ",systemConfigFileName," ... exiting")
-      quit()
-    end
-  end
-
-  InputStoreData = SystemData["InputStore"]
-  for tuple in InputStoreData
-    if(tuple["producer"]<=N)
-      ListP.vec[tuple["producer"]].InputStore.addContent(Symbol(tuple["simbol"], tuple["amount"],0))
-    end
-  end
-
-  # Then we will read the OutputStore initialization for each producer
-  try
-    InputStoreData = SystemData["OutputStore"]
-  catch error
-    if isa(error, KeyError)
-      println("No OutputStore at ",systemConfigFileName," ... exiting")
-      quit()
-    end
-  end
-
-  OutputStoreData = SystemData["OutputStore"]
-  for tuple in OutputStoreData
-    if(tuple["producer"]<=N)
-      ListP.vec[tuple["producer"]].OutputStore.addContent(Symbol(tuple["simbol"], tuple["amount"],0))
-    end
-  end
-
-  println("▬ Producers Successfuly Initialized\n")
-
-  # In last we will initialize all the rules
-  println("↓ Parsing Rules Data ...")
-  _rulelist = List{Rule}(Rule)
-
-  _precedent = List{Symbol}(Symbol);
-  _ynomlist = List{Int64}(Int64);
-  _succedent = Symbol("",0,0)
-
-  existingRule::Bool = true
-  for nProducers=1:N
-    producer = "Producer$nProducers"
-    try
-    ProducerRules = SystemData[producer]
-    catch error
-      if isa(error, KeyError)
-        existingRule = false
-      end
-    end
-
-    if existingRule==true # if there are rules for the current producer, read them
-      ProducerRules = SystemData[producer]
-      for tuple in ProducerRules
-        in = tuple["instring"]
-        inam = tuple["inamounts"]
-
-        inval = split(in,",")
-        inamval = split(inam,",")
-
-        if(length(inval) != length(inamval))
-          println("Error in Rules Definition in ",systemConfigFileName," ... exiting");
-          quit()
+        item_symbol = "";
+        item_amount = 0;
+        #Read producer's Input_Store
+        try
+          INPUTSTORE = tuple["Input_Store"];
+          for item in INPUTSTORE
+            try
+              item_symbol = item["Symbol"];
+            catch error
+              if isa(error, KeyError)
+                println("No Symbol at ",systemConfigFileName," in producer ",init_id," Input_Store... exiting");
+                quit()
+              end
+            end
+            try
+              item_amount = item["Amount"];
+            catch error
+              if isa(error, KeyError)
+                println("No Amount at ",systemConfigFileName," in producer ",init_id," Input_Store... exiting");
+                quit()
+              end
+            end
+            ListP.vec[prod_id].InputStore.addContent(Symbol(item["Symbol"], item["Amount"],0))
+          end
+        catch error
+          if isa(error, KeyError)
+            println("No Input_Store at ",systemConfigFileName," in producer ",init_id," ... exiting")
+            quit()
+          end
+        end
+        #Read producer's Output_Store
+        try
+          OUTPUTSTORE = tuple["Output_Store"];
+          for item in OUTPUTSTORE
+            try
+              item_symbol = item["Symbol"];
+            catch error
+              if isa(error, KeyError)
+                println("No Symbol at ",systemConfigFileName," in producer ",init_id," Output_Store... exiting");
+                quit()
+              end
+            end
+            try
+              item_amount = item["Amount"];
+            catch error
+              if isa(error, KeyError)
+                println("No Amount at ",systemConfigFileName," in producer ",init_id," Output_Store... exiting");
+                quit()
+              end
+            end
+            ListP.vec[prod_id].OutputStore.addContent(Symbol(item["Symbol"], item["Amount"],0))
+          end
+        catch error
+          if isa(error, KeyError)
+            println("No Output_Store at ",systemConfigFileName," in producer ",init_id," ... exiting")
+            quit()
+          end
         end
 
-        for i=1:length(inval)
-          _precedent.addContent(Symbol(inval[i],parse(Int,inamval[i]),0))
-        end
-        for count=1:K
-          _ynomlist.addContent(tuple["nom"]);
-        end
-        _succedent = Symbol(tuple["outstring"],tuple["outamounts"],0)
-
-        _rulelist.addContent(Rule(_precedent, _succedent, tuple["multi"], tuple["type"], tuple["min"], tuple["nom"],tuple["max"],_ynomlist))
-        _precedent.deleteList();
-        _ynomlist.deleteList();
+        #Read producer's Rules
+        _rulelist = List{Rule}(Rule)
         _precedent = List{Symbol}(Symbol);
         _ynomlist = List{Int64}(Int64);
-      end
-    else
-      println("  † No Rule Specifiaction for $producer\n")
-    end
+        _succedent = Symbol("",0,0)
+        try
+          RULES = tuple["Rules"]
+          for rule in RULES
+            inval = 0;
+            inamval = 0;
+            try
+              in = rule["InString"]
+              inam = rule["InAmounts"]
+              inval = split(in,",")
+              inamval = split(inam,",")
+              if(length(inval) != length(inamval))
+                println("Error in Rule input values in ",systemConfigFileName," in producer ",init_id," ... exiting");
+                quit()
+              end
+            catch error
+              if isa(error, KeyError)
+                println("Error at InString/InAmounts definition in ",systemConfigFileName," in producer ",init_id," Rules ... exiting");
+                quit()
+              end
+            end
 
-    ListV.addContent(_rulelist);
-    _rulelist = List{Rule}(Rule)
-    existingRule = true
-  end
-  println("▬ Producer Rules Successfuly Initialized\n")
+            for i=1:length(inval)
+              _precedent.addContent(Symbol(inval[i],parse(Int,inamval[i]),0))
+            end
 
-   println("↓ Parsing Impulse Perturbations Data ...")
+            try
+              for count=1:K
+                _ynomlist.addContent(rule["Nom"]);
+              end
+            catch error
+              if isa(error, KeyError)
+                println("Error at Nom definition in ",systemConfigFileName," in producer ",init_id," Rules ... exiting");
+                quit()
+              end
+            end
 
-  impulses = SystemData["ImpulsePerturbations"];
-  for tuple in impulses
-    producer = tuple["producer"]; ruleID = tuple["rule"]; percent = tuple["percentage"];
-    startPeriod = tuple["startperiod"]; endPeriod = tuple["endperiod"];
-    if(producer>=1 && producer<=N)
-      if(ruleID>=1 && ruleID<=length(ListV.vec[producer].vec))
-        if((startPeriod>=1&&startPeriod<=K)&&(endPeriod>=1&&endPeriod<=K))
-          for period=startPeriod:endPeriod
-             ListV.vec[producer].vec[ruleID].YnomList.vec[period] =  ListV.vec[producer].vec[ruleID].YnomList.vec[period]*percent;
+            try
+              _succedent = Symbol(rule["OutString"],rule["OutAmounts"],0)
+            catch error
+              if isa(error, KeyError)
+                println("Error at OutString/OutAmounts definition in ",systemConfigFileName," in producer ",init_id," Rules ... exiting");
+                quit()
+              end
+            end
+
+            try
+              _rulelist.addContent(Rule(_precedent, _succedent, rule["Multiplier"], rule["Type"], rule["Min"], rule["Nom"], rule["Max"],_ynomlist))
+            catch error
+              if isa(error, KeyError)
+                println("Error at Multiplier/Type/Min/Nom/Max definition in",systemConfigFileName," in producer ",init_id," Rules ... exiting");
+                quit()
+              end
+            end
+            _precedent.deleteList();
+            _ynomlist.deleteList();
+            _precedent = List{Symbol}(Symbol);
+            _ynomlist = List{Int64}(Int64);
           end
-        else
-          println(" ► Wrong period value in impulse perturbations");
+
+          ListV.addContent(_rulelist);
+          _rulelist = List{Rule}(Rule)
+        catch error
+          if isa(error, KeyError)
+            println("No Rules at ",systemConfigFileName," in producer ",init_id," ... exiting")
+            quit()
+          end
         end
-      else
-        println(" ► Wrong rule value in impulse perturbations");
+
+        init_id = init_id+1
       end
-    else
-      println(" ► Wrong producer value in impulse perturbations");
+  catch error
+    if isa(error, KeyError)
+      println("No Producers or Error at ",systemConfigFileName," ... exiting");
+      quit()
     end
   end
+  println("▬ Producers Successfuly Initialized\n")
 
-  println("▬ Impulse Perturbations Successfuly Initialized\n")
   println("▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n")
 
   return N
@@ -647,10 +657,10 @@ function CheckSys(C::Controller,P::List{Producer}, R::List{List{Rule}},period,f,
   end
 
   #Prices output
-  if(toConsole) println("Prices for period $period"); end
+  if(toConsole) println("► Prices for period $period"); end
   if(period==1) per = 1; else per = period-1 end
   for item=1:length(S.PricingList.vec)
-    if(toConsole) println(S.PricingList.vec[item].Symbol,"-",S.PricingList.vec[item].PriceList.vec[per]); end
+    if(toConsole) println("    ♦",S.PricingList.vec[item].Symbol,"-",S.PricingList.vec[item].PriceList.vec[per]); end
     @printf(f,"price(%d,%d)=%.10f\n",item,period,S.PricingList.vec[item].PriceList.vec[per]); #Sintaxe do Scilab
   end
   if(toConsole) println("\n▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n") end
@@ -660,16 +670,17 @@ function CheckRules(R::List{List{Rule}})
   println("↑ Displaying Current Rules")
   # Print Rules
   for prod=1:length(R.vec)
-    println("    ♦Rules for Producer$prod")
+    println("► Rules for Producer$prod")
     for rule=1:length(R.vec[prod].vec)
-      println("Antecedent: ")
+      println("  ♦ Rule $rule")
+      print("    Antecedent: ")
       for ant = 1:length(R.vec[prod].vec[rule].Antecedent.vec)
-        print(R.vec[prod].vec[rule].Antecedent.vec[ant])
+        print(R.vec[prod].vec[rule].Antecedent.vec[ant]," ")
       end
-      println("Consequent: ",R.vec[prod].vec[rule].Consequent)
-      println("Ymin: ",R.vec[prod].vec[rule].Ymin)
-      println("Ynom: ",R.vec[prod].vec[rule].Ynom)
-      println("Ymax: ",R.vec[prod].vec[rule].Ymax)
+      println("\n    Consequent: ",R.vec[prod].vec[rule].Consequent)
+      println("    Ymin: ",R.vec[prod].vec[rule].Ymin)
+      println("    Initial Ynom: ",R.vec[prod].vec[rule].YnomList.vec[1])
+      println("    Ymax: ",R.vec[prod].vec[rule].Ymax)
     end
   end
   println("\n▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n")
@@ -692,7 +703,7 @@ type Bank
   Assets::Float64  #Assets as numeraire
   Liabilities::Float64  #Liabilities as numeraire
   Credits::List{CreditContract} #List of credits done by the bank
-  
+
   function Bank(id,credits::List{CreditContract}, assets = 0.0, liabilities = 0.0)
     this = new();
     id = ID;

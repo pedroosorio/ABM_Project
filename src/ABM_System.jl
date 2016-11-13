@@ -49,45 +49,37 @@ type SuperSystem
       SYSTEM_DATA = Configuration["System"] #Get System Block
       try
         SIM_PROPERTIES = SYSTEM_DATA["SimulationProperties"] #Get sim properties
+        for tuple in SIM_PROPERTIES
+          this.K = tuple["K"]
+          this.N = tuple["N"]
+        end
         try
-          SIM_PROPERTIES = SYSTEM_DATA["SimulationProperties"] #Get sim properties
-          for tuple in SIM_PROPERTIES
-            this.K = tuple["K"]
-            this.N = tuple["N"]
-          end
-          try
-            PRICES = SYSTEM_DATA["Pricing"]
-            this.PricingList = List{StandardPriceCell}(StandardPriceCell)
-            this.PricingList.deleteList();
-            for tuple in Prices
-              _priceList = List{Float64}(Float64);
-              for count=1:this.K
-                _priceList.addContent(tuple["Price"]);
-              end
-              symb = tuple["Symbol"]
-              this.PricingList.addContent(StandardPriceCell(symb,_priceList));
-              _priceList.deleteList();
+          PRICES = SYSTEM_DATA["Pricing"]
+          this.PricingList = List{StandardPriceCell}(StandardPriceCell)
+          this.PricingList.deleteList();
+          for tuple in PRICES
+            _priceList = List{Float64}(Float64);
+            for count=1:this.K
+              _priceList.addContent(tuple["Price"]);
             end
-          catch error
-            if isa(error, KeyError)
-            println("No Pricing data or Errors in ",systemConfigFileName," ... exiting")
-            quit()
-            end
+            symb = tuple["Symbol"]
+            this.PricingList.addContent(StandardPriceCell(symb,_priceList));
+            _priceList.deleteList();
           end
         catch error
           if isa(error, KeyError)
-          println("No SimulationProperties or Errors data in ",systemConfigFileName," ... exiting")
-          quit()
+            println("No Pricing data or Errors in ",systemConfigFileName," ... exiting")
+            quit()
           end
         end
       catch error
         if isa(error, KeyError)
-        println("No SimulationProperties or Errors data in ",systemConfigFileName," ... exiting")
-        quit()
+          println("No SimulationProperties or Errors data in ",systemConfigFileName," ... exiting")
+          quit()
         end
       end
-      catch error
-        if isa(error, KeyError)
+    catch error
+      if isa(error, KeyError)
         println("No System data in ",systemConfigFileName," ... exiting")
         quit()
       end
@@ -102,18 +94,14 @@ type SuperSystem
     this.V = List{List{Rule}}(List{Rule})     #List of Rules per Producer
     this.B = List{BList_Cell}(BList_Cell)     #BList - with sales
     InitC(this.C,1.0,Configuration,systemConfigFileName) #Initialize the Controller
-    quit()
-    this.N = InitP(this.P,this.V,0.0,this.K,Configuration,systemConfigFileName) #Initialize the Producers
+    this.N = InitP(this.P,this.V,0.0,this.K,this.N,Configuration,systemConfigFileName) #Initialize the Producers
     this.ActiveProducers = this.N;
     InitB(this.B,this.V) #Initialize the B* List
-    #CheckSys(this.C,this.P,this.V) #Print Current System State
-    #CheckBList(this.B)#Print Current BList
-
+    println("▬ System Initialized\n")
     #SYSTEM FUNCTIONS
    ###################################################################################
    ###################################################################################
     this.OutputProducersParameters = function(f)
-
     end
    ###################################################################################
    ###################################################################################
