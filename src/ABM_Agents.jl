@@ -563,6 +563,38 @@ function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float
               end
             end
 
+            initialNominalValue = rule["Nom"];
+            try
+              PERTURBATIONS = rule["Perturbations"]
+              for perturbation in PERTURBATIONS
+                try
+                  start_period = perturbation["StartPeriod"]
+                  end_period = perturbation["EndPeriod"]
+                  percentage = perturbation["Percentage"]
+
+                  if((start_period>=1&&start_period<=N)&&(end_period>=1&&end_period<=N)&&(start_period<=end_period))
+                    for period=start_period:end_period
+                        _ynomlist.vec[period] = convert(Int64,initialNominalValue*percentage)
+                    end
+                  else
+                    println("Error at Perturbation's periods definition in ",systemConfigFileName," in producer ",init_id," Rules ... exiting");
+                    quit()
+                  end
+                catch error
+                  if isa(error, KeyError)
+                    println("Error at Perturbation definition in ",systemConfigFileName," in producer ",init_id," Rules ... exiting");
+                    quit()
+                  end
+                end
+              end
+            catch error
+              if isa(error, KeyError)
+                println("Error at Perturbations in ",systemConfigFileName," in producer ",init_id," Rules ... exiting");
+                quit()
+              end
+            end
+            #Compute nominal values given perturbations
+
             try
               _succedent = Symbol(rule["OutString"],rule["OutAmounts"],0)
             catch error

@@ -60,7 +60,14 @@
           "Type": "a",
           "Min": 10,
           "Nom": 20,
-          "Max": 20
+          "Max": 20,
+          "Perturbations" :[
+            {
+               "StartPeriod": 1,
+               "EndPeriod": 1,
+               "Percentage": 1.0
+            }
+          ]
         },
         {
           "InString": "E",
@@ -71,7 +78,8 @@
           "Type": "d",
           "Min": 1,
           "Nom": 2,
-          "Max": 2
+          "Max": 2,
+          "Perturbations" :[]
         },
         {
           "InString": "F",
@@ -82,7 +90,8 @@
           "Type": "d",
           "Min": 2,
           "Nom": 4,
-          "Max": 4
+          "Max": 4,
+          "Perturbations" :[]
         }
       ],
       "Input_Store": [
@@ -111,7 +120,8 @@
           "Type": "a",
           "Min": 15,
           "Nom": 30,
-          "Max": 30
+          "Max": 30,
+          "Perturbations" :[]
         },
         {
           "InString": "E",
@@ -122,7 +132,8 @@
           "Type": "d",
           "Min": 1,
           "Nom": 2,
-          "Max": 2
+          "Max": 2,
+          "Perturbations" :[]
         },
         {
           "InString": "F",
@@ -133,7 +144,8 @@
           "Type": "d",
           "Min": 2,
           "Nom": 4,
-          "Max": 4
+          "Max": 4,
+          "Perturbations" :[]
         }
       ],
       "Input_Store": [
@@ -162,7 +174,8 @@
           "Type": "a",
           "Min": 5,
           "Nom": 10,
-          "Max": 10
+          "Max": 10,
+          "Perturbations" :[]
         },
         {
           "InString": "E",
@@ -173,7 +186,8 @@
           "Type": "d",
           "Min": 1,
           "Nom": 2,
-          "Max": 2
+          "Max": 2,
+          "Perturbations" :[]
         },
         {
           "InString": "F",
@@ -184,7 +198,8 @@
           "Type": "d",
           "Min": 2,
           "Nom": 4,
-          "Max": 4
+          "Max": 4,
+          "Perturbations" :[]
         }
       ],
       "Input_Store": [
@@ -221,7 +236,8 @@
           "Type": "a",
           "Min": 90,
           "Nom": 180,
-          "Max": 180
+          "Max": 180,
+          "Perturbations" :[]
         },
         {
           "InString": "E",
@@ -232,7 +248,8 @@
           "Type": "d",
           "Min": 1,
           "Nom": 2,
-          "Max": 2
+          "Max": 2,
+          "Perturbations" :[]
         },
         {
           "InString": "F",
@@ -243,7 +260,8 @@
           "Type": "d",
           "Min": 2,
           "Nom": 4,
-          "Max": 4
+          "Max": 4,
+          "Perturbations" :[]
         }
       ],
       "Input_Store": [
@@ -272,7 +290,8 @@
           "Type": "a",
           "Min": 10,
           "Nom": 20,
-          "Max": 20
+          "Max": 20,
+          "Perturbations" :[]
         },
         {
           "InString": "E",
@@ -283,7 +302,8 @@
           "Type": "d",
           "Min": 1,
           "Nom": 2,
-          "Max": 2
+          "Max": 2,
+          "Perturbations" :[]
         },
         {
           "InString": "F",
@@ -294,7 +314,8 @@
           "Type": "d",
           "Min": 2,
           "Nom": 4,
-          "Max": 4
+          "Max": 4,
+          "Perturbations" :[]
         }
       ],
       "Input_Store": [
