@@ -526,9 +526,10 @@ type SuperSystem
   ###################################################################################
   ###################################################################################
     this.BuyItems = function(f,period)
+      target::AbstractString = ""
       for prod = 1:length(this.P.vec)
         if(this.P.vec[prod].Enabled)
-          itemsToBuy = List{ControllerGoal}(ControllerGoal); #To gather items to buy
+          itemsToBuy = List{BuyingGoal}(BuyingGoal); #To gather items to buy
           #First determine the percentil of every rule, then sum up the matching type items, then buy
           for rule = 1:length(this.V.vec[prod].vec)
             percentil = 1.0;
@@ -566,18 +567,18 @@ type SuperSystem
             for products=1:length(precedents.vec) #Run through the precedents of every rule to get the percentil
               foundItem = false;
               if(precedents.vec[products].Symbol!="*")
-                targetAmount = precedents.vec[products].Amount*this.V.vec[prod].vec[rule].YnomList.vec[period]*percentil
-                minAmount = precedents.vec[products].Amount*this.V.vec[prod].vec[rule].Ymin
+                targetAmount = convert(Int64,precedents.vec[products].Amount*this.V.vec[prod].vec[rule].YnomList.vec[period]*percentil)
+                minAmount = convert(Int64,precedents.vec[products].Amount*this.V.vec[prod].vec[rule].Ymin)
                 target = precedents.vec[products].Symbol
                 for item=1:length(itemsToBuy.vec) #Add the items by thye percentil to buy next
                   if(itemsToBuy.vec[item].Symbol == target)
-                    itemsToBuy.vec[item].Ynom +=  targetAmount
-                    itemsToBuy.vec[item].Ymin +=  minAmount
+                    itemsToBuy.vec[item].targetAmount +=  convert(Int64,targetAmount)
+                    itemsToBuy.vec[item].minimumAmount +=  convert(Int64,minAmount)
                     foundItem = true
                   end
                 end
                 if(foundItem == false)
-                  itemsToBuy.addContent(ControllerGoal(target,minAmount,targetAmount))
+                  itemsToBuy.addContent(BuyingGoal(target,minAmount,targetAmount))
                 end
               end
             end
@@ -586,8 +587,8 @@ type SuperSystem
           #Now that we have what to buy, in the required levels, lets buy !
           for item=1:length(itemsToBuy.vec)
             target = itemsToBuy.vec[item].Symbol;
-            targetAmount = itemsToBuy.vec[item].Ynom;
-            minAmount = itemsToBuy.vec[item].Ymin;
+            targetAmount = itemsToBuy.vec[item].targetAmount;
+            minAmount = itemsToBuy.vec[item].minimumAmount;
             if(this.P.vec[prod].existsInInputStoreItem(target,targetAmount)==false) #if we already have the item, ignore
             #it already takes into account the items set to further production
               alreadyInStore = this.P.vec[prod].getSymbolAmount(target);
@@ -719,13 +720,13 @@ type SuperSystem
   ###################################################################################
     #File output functions
   this.PrintSteadyState = function(f) #Prints the steady state objectives of each agent on the simulation file
-     for obj=1:length(this.C.Goals.vec)
-        quant = this.C.Goals.vec[obj].Amount
-        #write(f,this.C.Goals.vec[obj].Symbol,"@$quant/")
-      end
+    for obj=1:length(this.C.Goals.vec)
+      quant = this.C.Goals.vec[obj].Amount
+      #write(f,this.C.Goals.vec[obj].Symbol,"@$quant/")
+    end
 
-      for prod=1:length(this.P.vec)
-        id = this.P.vec[prod].ID
+    for prod=1:length(this.P.vec)
+      id = this.P.vec[prod].ID
       for rule=1:length(this.V.vec[prod].vec)
         if(this.V.vec[prod].vec[rule].Type == "a" || this.V.vec[prod].vec[rule].Type == "c")
             quant = this.V.vec[prod].vec[rule].Consequent.Amount*this.V.vec[prod].vec[rule].Ynom

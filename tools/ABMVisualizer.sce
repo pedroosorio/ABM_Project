@@ -17,7 +17,7 @@ clear
 user = getenv("USER");
 if(user=="pedro") chdir(getenv("HOME")+"/git/ABM_Project/tools")
 // Get file info
-SystemID = "TestA1"
+SystemID = "new"
 inputFileName = "../outputs/simulation."+SystemID+".txt"
 [f,e]=mopen(inputFileName,"rt")
 info=mgetl(f,-1)

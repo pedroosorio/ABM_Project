@@ -1,4 +1,4 @@
-workspace()
+
 export List
 export Symbol
 export Rule
@@ -6,6 +6,7 @@ export StandardPriceCell
 export ProductOffer
 export BList_Cell
 export CreditContract
+export BuyingGoal
 
 ################## LIST TYPE ##################
 ###############################################
@@ -120,13 +121,30 @@ type ControllerGoal
   Ynom::Int64
   Ymax::Int64
   DesiredPrice::Float64
-  function ControllerGoal(symb, min, nom,max,price)
+  function ControllerGoal(symb, min, nom,max=0,price=0)
     this = new()
     this.Symbol = symb;
     this.Ymin = min;
     this.Ynom = nom;
     this.Ymax = max;
     this.DesiredPrice = price;
+    return this;
+  end
+end
+###############################################
+###############################################
+
+############## BUYING GOAL TYPE ###############
+###############################################
+type BuyingGoal
+  Symbol::AbstractString
+  minimumAmount::Int64
+  targetAmount::Int64
+  function BuyingGoal(symb, min::Int64, nom::Int64)
+    this = new()
+    this.Symbol = symb;
+    this.minimumAmount = min;
+    this.targetAmount = nom;
     return this;
   end
 end
