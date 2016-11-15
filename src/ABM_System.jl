@@ -33,6 +33,7 @@ type SuperSystem
   ControllerAction::Function #Controller buys what we needs and apply taxes
   getStandardPrice::Function #Returns the standard price for each symbol
   ApplyTaxes::Function #Controller applies taxes to every producer if applicable
+  ProcessCredit::Function #Function that processes credit contract over periods
   CheckSys::Function #Prints system information
   #File output functions
   PrintSteadyState::Function #Prints the steady state of each agent on the simulation file
@@ -782,7 +783,8 @@ type SuperSystem
           # Test if the numeraire is negative before the application of taxes
           if(this.P.vec[prod].Numeraire<0)
             this.DeleteProducer(this.P.vec[prod].ID)
-            #Dont die, ask for credit
+
+            #Make a credit ???
           else
             if(this.P.vec[prod].Internal) #Only apply taxes to internal sector
               tax = this.P.vec[prod].numeraireToBeTaxed*this.C.taxPercentage;
@@ -794,6 +796,7 @@ type SuperSystem
               #A producer can also be deleted if its numeraire becomes negative after taxes
               if(this.P.vec[prod].Numeraire<0)
                 this.DeleteProducer(this.P.vec[prod].ID)
+                #Make a credit ???
               else
                 @printf(f,"numeraires(%d,%d)=%.3f%s",this.P.vec[prod].ID,period,this.P.vec[prod].Numeraire,"\n");
               end
@@ -892,7 +895,31 @@ type SuperSystem
 
     if(toConsole) println("\n▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n") end
   end
+  ###################################################################################
+  ###################################################################################
+    this.ProcessCredit = function(f,period)
+      for prod = 1:length(this.P.vec)
+        if(this.P.vec[prod].Enabled)
+          for credit=1:length(this.P.vec[prod].Credits.vec)
+            amountToPay = (this.P.vec[prod].Credits.vec[credit].Amount/this.P.vec[prod].Credits.vec[credit].CreditPayTime)+
+                          ((this.P.vec[prod].Credits.vec[credit].Amount-this.P.vec[prod].Credits.vec[credit].AmountPaid)*
+                          this.P.vec[prod].Credits.vec[credit].InterestRates);
+            this.P.vec[prod].Credits.vec[credit].AmountPaid += (this.P.vec[prod].Credits.vec[credit].Amount/
+                                                                this.P.vec[prod].Credits.vec[credit].CreditPayTime);
+            #Effect in Client
+            this.P.vec[prod].Numeraire -= amountToPay
+            #Effect in Lender
 
+            if(this.P.vec[prod].Credits.vec[credit].AmountPaid>=this.P.vec[prod].Credits.vec[credit].Amount)
+              #Delete credit
+            end
+
+          end
+        end
+      end
+    end
+  ###################################################################################
+  ###################################################################################
     return this,this.K,this.N
   end
 end

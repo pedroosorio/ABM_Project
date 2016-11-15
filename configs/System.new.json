@@ -116,7 +116,7 @@
         {
            "Amount" : 200,
            "InterestRates" : 5.0,
-           "CreditPayTime" : 20,
+           "CreditPayTime" : 10,
            "AmountPaid" : 0.0,
            "LenderID" : 1
         }

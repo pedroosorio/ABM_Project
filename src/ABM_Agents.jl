@@ -124,7 +124,8 @@ type Producer
     this.Enabled = true
     this.ID = id_
     this.Internal = internal
-
+    this.Assets = 0.0
+    this.Liabilities = 0.0
     ######################################################
     ######################################################
     this.existsInInputStore = function(pre)
@@ -653,6 +654,13 @@ function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, ListF::List{Bank}
               clientID = prod_id;
               ListP.vec[prod_id].Credits.addContent(CreditContract(amount,interestRates,creditPayTime,amountPaid,clientID,lenderID))
               ListF.vec[lenderID].Credits.addContent(CreditContract(amount,interestRates,creditPayTime,amountPaid,clientID,lenderID))
+
+              #Effect of this credit contract in the client(P) and the lender (F)
+              # Client
+              ListP.vec[prod_id].Numeraire += amount
+              # Bank
+              #######################################
+
             catch error
               if isa(error, KeyError)
                 println("Error in Credit definition at ",systemConfigFileName," in producer ",init_id," ... exiting");

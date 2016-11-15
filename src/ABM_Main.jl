@@ -1,4 +1,8 @@
 include("ABM_System.jl")
+Pkg.add("PyPlot")
+using PyPlot
+x = linspace(0,2*pi,1000); y = sin(3*x + 4*cos(2*x))
+plot(x, y, color="red", linewidth=2.0, linestyle="--")
 ###################################################################################
 #Defines system's initialization file name : System.SystemID.json
 #Defines system's output file name : simulation.SystemID.txt
@@ -39,8 +43,8 @@ for period = 1:K
   S.ProductionAnnouncement(f,period) #Producers announce what they can produce,
   S.BuyItems(f,period) #Producers buy what they want/need from other producers
   S.ControllerAction(f,period)
+  S.ProcessCredit(f,period)
   S.ApplyTaxes(f,period)
-  #S.ProcessCredit(f,period);
   S.CheckSys(f,period+1,false); #Prints to output file the stores values of each producer
   #period+1 and not period because the minimum array index in Scilab is 1
 end

@@ -164,7 +164,7 @@ type CreditContract
   function CreditContract(amount,interest_rates,pay_time,amount_paid,client_id,lender_id)
     this = new();
     this.Amount = amount;
-    this.InterestRates = interest_rates;
+    this.InterestRates = interest_rates/100.0;
     this.CreditPayTime = pay_time;
     this.AmountPaid = amount_paid;
     this.ClientID = client_id;
