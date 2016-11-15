@@ -1,4 +1,3 @@
-
 export List
 export Symbol
 export Rule
@@ -7,6 +6,7 @@ export ProductOffer
 export BList_Cell
 export CreditContract
 export BuyingGoal
+export Bank
 
 ################## LIST TYPE ##################
 ###############################################
@@ -276,6 +276,30 @@ function CheckBList(B::List{BList_Cell})
     println();
   end
 
+end
+###############################################
+###############################################
+
+###################################################################################
+###################################################################################
+#BANK AGENT
+
+################## BANK TYPE ##################
+###############################################
+type Bank
+  ID::Int64
+  Assets::Float64  #Assets as numeraire
+  Liabilities::Float64  #Liabilities as numeraire
+  Credits::List{CreditContract} #List of credits done by the bank
+
+  function Bank(id, assets, liabilities)
+    this = new();
+    this.ID = id;
+    this.Assets = assets;
+    this.Liabilities = liabilities;
+    this.Credits = List{CreditContract}(CreditContract)
+    return this
+  end
 end
 ###############################################
 ###############################################

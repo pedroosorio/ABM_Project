@@ -27,10 +27,8 @@ for item=1:length(S.PricingList.vec)
   @printf(f,"priceSymbols(%d)=\"%s\"\n",item,S.PricingList.vec[item].Symbol); #Sintaxe do Scilab
 end
 
-#CheckSys(S.C,S.P,S.V,1,f,false,S); #Prints to output file the stores values of each producer STARTING POINT
-
-CheckSys(S.C,S.P,S.V,1,f,true,S); #Prints to output file the stores values of each producer STARTING POINT
-#CheckRules(S.V)
+S.CheckSys(f,1,false); #Prints to output file the stores values of each producer STARTING POINT
+S.CheckSys(f,1,true); #Prints to output file the stores values of each producer STARTING POINT
 
 println("   ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼")
 println("  Starting Simulation ... $K Periods");
@@ -43,14 +41,13 @@ for period = 1:K
   S.ControllerAction(f,period)
   S.ApplyTaxes(f,period)
   #S.ProcessCredit(f,period);
-  CheckSys(S.C,S.P,S.V,period+1,f,false,S); #Prints to output file the stores values of each producer
+  S.CheckSys(f,period+1,false); #Prints to output file the stores values of each producer
   #period+1 and not period because the minimum array index in Scilab is 1
 end
 
 println("  ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼")
 println(" Simulation terminated");
 println("  ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼ \n")
-#CheckSys(S.C,S.P,S.V,K,f,true); #Prints to console the stores values of each producer END POINT
 #@printf(f,"@SIMULATION_END%s","\n");
 close(f)
 quit()

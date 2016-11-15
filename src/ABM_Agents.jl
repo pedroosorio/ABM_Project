@@ -400,7 +400,7 @@ end
 
 ############### INITP FUNCTION ################
 ###############################################
-function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float64, K::Int64, N::Int64,SystemData,systemConfigFileName)
+function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, ListF::List{Bank}, _Numeraire::Float64, K::Int64, N::Int64,SystemData,systemConfigFileName)
   try
       PRODUCERS = SystemData["Producers"];
       initializedProducers = 0;
@@ -637,8 +637,22 @@ function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, _Numeraire::Float
               creditPayTime = credit["CreditPayTime"];
               amountPaid = credit["AmountPaid"];
               lenderID = credit["LenderID"];
+
+              # Verify existance of the bank for the lenderID
+              validLenderID = false
+              for bank=1:length(ListF.vec)
+                if(ListF.vec[bank].ID == lenderID)
+                  validLenderID = true
+                end
+              end
+              if(validLenderID==false)
+                println("LenderID assignment to non existent Bank at ",systemConfigFileName," in producer ",init_id," ... exiting")
+                quit()
+              end
+
               clientID = prod_id;
               ListP.vec[prod_id].Credits.addContent(CreditContract(amount,interestRates,creditPayTime,amountPaid,clientID,lenderID))
+              ListF.vec[lenderID].Credits.addContent(CreditContract(amount,interestRates,creditPayTime,amountPaid,clientID,lenderID))
             catch error
               if isa(error, KeyError)
                 println("Error in Credit definition at ",systemConfigFileName," in producer ",init_id," ... exiting");
@@ -670,73 +684,6 @@ end
 ###############################################
 ###############################################
 
-
-############# CHECKSYS FUNCTION ###############
-###############################################
-function CheckSys(C::Controller,P::List{Producer}, R::List{List{Rule}},period,f,toConsole,S)
-  if(toConsole) println("↑ Displaying Current SYSTEM information ...") end
-  # Print Controller Information
-  #=println("→ Controller Info:")
-  for i=1:C.Goals.getSize()
-    Simb = C.getGoal(i)
-    println("    ♦\"",Simb.Symbol,"\": ",Simb.Amount," units @ ",C.getPrice(i))
-  end=#
-
-  if(toConsole) println("\n→ Producers Info:") end
-  for i=1:P.getSize()
-    if(P.vec[i].Enabled)
-      if(toConsole) println("► Producer $i Info [",P.vec[i].ID,"]:"); end
-      if(toConsole)
-        if (P.vec[i].Internal==true)
-          println("► From Internal Sector.")
-        else
-          println("► From External Sector.")
-        end
-      end
-      if(toConsole) println("    ♦Numeraire: ",P.vec[i].Numeraire) end  #Imprime o numerário do produtor P.vec[i]
-      if(period==1) @printf(f,"numeraires_0(%d)=%d\n",i,P.vec[i].Numeraire); end  #Output to file numerário do produtor P.vec[i]
-      if(toConsole) println("    ♦InputStore [",length(P.vec[i].InputStore.vec),"]:"); end
-      for j=1:length(P.vec[i].InputStore.vec)
-        Simb = P.vec[i].InputStore.vec[j];
-          if(toConsole) println("      ♦\"",Simb.Symbol,"\": ",Simb.Amount," units") end #Imprime as quantidades(Simb.Amount) do produto
-        # Simb.Symbol do produtor P.vec[i], que estão na InputStore
-        @printf(f,"inputStore_%s(%d,%d)=%d\n",Simb.Symbol,i,period,Simb.Amount); #Sintaxe do Scilab
-
-      end
-
-      if(toConsole) println("    ♦OutputStore [",length(P.vec[i].OutputStore.vec),"]:"); end
-      for k=1:length(P.vec[i].OutputStore.vec)
-        Simb = P.vec[i].OutputStore.vec[k];
-        if(toConsole) println("      ♦\"",Simb.Symbol,"\": ",Simb.Amount," units") end#Imprime as quantidades(Simb.Amount) do produto
-        # Simb.Symbol do produtor P.vec[i], que estão na OutputStore
-        @printf(f,"outputStore_%s(%d,%d)=%d\n",Simb.Symbol,i,period,Simb.Amount); #Sintaxe do Scilab
-      end
-
-      if(toConsole) println("    ♦Credits [",length(P.vec[i].Credits.vec),"]:"); end
-      for k=1:length(P.vec[i].Credits.vec)
-        if(toConsole)
-          println("      ♦ Credit Nº",k)
-          println("         Amount: ",P.vec[i].Credits.vec[k].Amount)
-          println("         InterestRates: ",P.vec[i].Credits.vec[k].InterestRates)
-          println("         CreditPayTime: ",P.vec[i].Credits.vec[k].CreditPayTime)
-          println("         AmountPaid: ",P.vec[i].Credits.vec[k].AmountPaid)
-          println("         ClientID: ",P.vec[i].Credits.vec[k].ClientID)
-          println("         LenderID: ",P.vec[i].Credits.vec[k].LenderID)
-        end
-      end
-    end
-  end
-
-  #Prices output
-  if(toConsole) println("► Prices for period $period"); end
-  if(period==1) per = 1; else per = period-1 end
-  for item=1:length(S.PricingList.vec)
-    if(toConsole) println("    ♦",S.PricingList.vec[item].Symbol,"-",S.PricingList.vec[item].PriceList.vec[per]); end
-    @printf(f,"price(%d,%d)=%.10f\n",item,period,S.PricingList.vec[item].PriceList.vec[per]); #Sintaxe do Scilab
-  end
-  if(toConsole) println("\n▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n") end
-end
-
 function CheckRules(R::List{List{Rule}})
   println("↑ Displaying Current Rules")
   # Print Rules
@@ -761,28 +708,3 @@ end
 
 ###################################################################################
 ###################################################################################
-
-
-###################################################################################
-###################################################################################
-#BANK AGENT
-
-################## BANK TYPE ##################
-###############################################
-type Bank
-  ID::Int64
-  Assets::Float64  #Assets as numeraire
-  Liabilities::Float64  #Liabilities as numeraire
-  Credits::List{CreditContract} #List of credits done by the bank
-
-  function Bank(id,credits::List{CreditContract}, assets = 0.0, liabilities = 0.0)
-    this = new();
-    id = ID;
-    Assets = assets;
-    Liabilities = liabilities;
-    Credits = credits;
-    return this
-  end
-end
-###############################################
-###############################################

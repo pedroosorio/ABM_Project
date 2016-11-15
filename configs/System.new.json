@@ -27,6 +27,13 @@
         "Symbol": "F",
         "Price": 2.625
       }
+    ],
+    "Banks" : [
+      {
+        "ID" : 1,
+        "Assets" : 1000.0,
+        "Liabilities" : -1000.0
+      }
     ]
   },
   "Controller": {
@@ -112,16 +119,9 @@
            "CreditPayTime" : 20,
            "AmountPaid" : 0.0,
            "LenderID" : 1
-        },
-        {
-           "Amount" : 50,
-           "InterestRates" : 10.0,
-           "CreditPayTime" : 10,
-           "AmountPaid" : 0.0,
-           "LenderID" : 2
         }
       ]
-      
+
     },
     {
       "Id": 2,

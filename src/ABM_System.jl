@@ -9,6 +9,7 @@ type SuperSystem
   B::List{BList_Cell}     #B List
   K::Int64                #K cycles
   N::Int64                #N Producing Systems
+  F::List{Bank}           #List of Financial institutions (Banks)
   PricingList::List{StandardPriceCell}   #List of prices by Symbol
   ActiveProducers::Int64  # Current number of active producers in the super system
 
@@ -32,7 +33,7 @@ type SuperSystem
   ControllerAction::Function #Controller buys what we needs and apply taxes
   getStandardPrice::Function #Returns the standard price for each symbol
   ApplyTaxes::Function #Controller applies taxes to every producer if applicable
-
+  CheckSys::Function #Prints system information
   #File output functions
   PrintSteadyState::Function #Prints the steady state of each agent on the simulation file
   function SuperSystem(systemConfigFileName)
@@ -41,10 +42,8 @@ type SuperSystem
     completePathCfgFile = string("./",systemConfigFileName);
     Configuration = JSON.parsefile(completePathCfgFile) #Parse System.json to get system info
     println("↓ Parsing System JSON Config File ...")
-    #Default Values
-    this.K = 1
-    this.N = 5
 
+    this.F = List{Bank}(Bank)         #List of Financial institutions (Banks)
     try
       SYSTEM_DATA = Configuration["System"] #Get System Block
       try
@@ -78,6 +77,41 @@ type SuperSystem
           quit()
         end
       end
+
+      #Initialize Banks
+      try
+        BANKS = SYSTEM_DATA["Banks"] #Get sim properties
+        bank_id = 0;
+        bank_ass = 0.0;
+        bank_liab = 0.0;
+        for item in BANKS
+          try
+            bank_id = item["ID"];
+            bank_ass = item["Assets"];
+            bank_liab = item["Liabilities"];
+
+            for b=1:length(this.F.vec)
+              if(this.F.vec[b].ID == bank_id)
+                println("Error in Bank definition at ",systemConfigFileName,". Banks with same ID's ... exiting")
+                quit()
+              end
+            end
+            this.F.addContent(Bank(bank_id,bank_ass,bank_liab));
+          catch error
+            if isa(error, KeyError)
+              println("Error in Bank definition at ",systemConfigFileName," ... exiting")
+              quit()
+            end
+          end
+        end
+
+        println("▬ Financial Institutes Initialized\n")
+      catch error
+        if isa(error, KeyError)
+          println("No Banks at System data in ",systemConfigFileName," ... exiting")
+          quit()
+        end
+      end
     catch error
       if isa(error, KeyError)
         println("No System data in ",systemConfigFileName," ... exiting")
@@ -94,7 +128,7 @@ type SuperSystem
     this.V = List{List{Rule}}(List{Rule})     #List of Rules per Producer
     this.B = List{BList_Cell}(BList_Cell)     #BList - with sales
     InitC(this.C,1.0,Configuration,systemConfigFileName) #Initialize the Controller
-    this.N = InitP(this.P,this.V,0.0,this.K,this.N,Configuration,systemConfigFileName) #Initialize the Producers
+    this.N = InitP(this.P,this.V,this.F,0.0,this.K,this.N,Configuration,systemConfigFileName) #Initialize the Producers
     this.ActiveProducers = this.N;
     InitB(this.B,this.V) #Initialize the B* List
     println("▬ System Initialized\n")
@@ -772,6 +806,93 @@ type SuperSystem
   end
   ###################################################################################
   ###################################################################################
+  ############# CHECKSYS FUNCTION ###############
+  ###############################################
+  this.CheckSys = function(f,period,toConsole)
+    if(toConsole) println("↑ Displaying Current SYSTEM information ...") end
+    # Print Controller Information
+    #=println("→ Controller Info:")
+    for i=1:C.Goals.getSize()
+      Simb = C.getGoal(i)
+      println("    ♦\"",Simb.Symbol,"\": ",Simb.Amount," units @ ",C.getPrice(i))
+    end=#
+
+    if(toConsole) println("\n→ Producers Info:") end
+    for i=1:this.P.getSize()
+      if(this.P.vec[i].Enabled)
+        if(toConsole) println("► Producer $i Info [",this.P.vec[i].ID,"]:"); end
+        if(toConsole)
+          if (this.P.vec[i].Internal==true)
+            println("► From Internal Sector.")
+          else
+            println("► From External Sector.")
+          end
+        end
+        if(toConsole) println("    ♦Numeraire: ",this.P.vec[i].Numeraire) end  #Imprime o numerário do produtor P.vec[i]
+        if(period==1) @printf(f,"numeraires_0(%d)=%d\n",i,this.P.vec[i].Numeraire); end  #Output to file numerário do produtor P.vec[i]
+        if(toConsole) println("    ♦InputStore [",length(this.P.vec[i].InputStore.vec),"]:"); end
+        for j=1:length(this.P.vec[i].InputStore.vec)
+          Simb = this.P.vec[i].InputStore.vec[j];
+          if(toConsole) println("      ♦\"",Simb.Symbol,"\": ",Simb.Amount," units") end #Imprime as quantidades(Simb.Amount) do produto
+          # Simb.Symbol do produtor P.vec[i], que estão na InputStore
+          @printf(f,"inputStore_%s(%d,%d)=%d\n",Simb.Symbol,i,period,Simb.Amount); #Sintaxe do Scilab
+        end
+
+        if(toConsole) println("    ♦OutputStore [",length(this.P.vec[i].OutputStore.vec),"]:"); end
+        for k=1:length(this.P.vec[i].OutputStore.vec)
+          Simb = this.P.vec[i].OutputStore.vec[k];
+          if(toConsole) println("      ♦\"",Simb.Symbol,"\": ",Simb.Amount," units") end#Imprime as quantidades(Simb.Amount) do produto
+          # Simb.Symbol do produtor P.vec[i], que estão na OutputStore
+          @printf(f,"outputStore_%s(%d,%d)=%d\n",Simb.Symbol,i,period,Simb.Amount); #Sintaxe do Scilab
+        end
+
+        if(toConsole) println("    ♦Credits [",length(this.P.vec[i].Credits.vec),"]:"); end
+        for k=1:length(this.P.vec[i].Credits.vec)
+          if(toConsole)
+            println("      ♦ Credit Nº",k)
+            println("         Amount: ",this.P.vec[i].Credits.vec[k].Amount)
+            println("         InterestRates: ",this.P.vec[i].Credits.vec[k].InterestRates)
+            println("         CreditPayTime: ",this.P.vec[i].Credits.vec[k].CreditPayTime)
+            println("         AmountPaid: ",this.P.vec[i].Credits.vec[k].AmountPaid)
+            println("         ClientID: ",this.P.vec[i].Credits.vec[k].ClientID)
+            println("         LenderID: ",this.P.vec[i].Credits.vec[k].LenderID)
+          end
+        end
+      end
+    end
+
+    #Prices output
+    if(toConsole) println("► Prices for period $period"); end
+    if(period==1) per = 1; else per = period-1 end
+    for item=1:length(this.PricingList.vec)
+      if(toConsole) println("    ♦",this.PricingList.vec[item].Symbol,"-",this.PricingList.vec[item].PriceList.vec[per]); end
+      @printf(f,"price(%d,%d)=%.10f\n",item,period,this.PricingList.vec[item].PriceList.vec[per]); #Sintaxe do Scilab
+    end
+    #Banks
+    if(toConsole) println("► Finacial Institutes for period $period [",length(this.F.vec),"]"); end
+    for item=1:length(this.F.vec)
+        if(toConsole)
+          println("► Bank ",this.F.vec[item].ID,":");
+          println("    ♦Assets: ",this.F.vec[item].Assets);
+          println("    ♦Liabilities: ",this.F.vec[item].Liabilities);
+          println("    ♦Credits[",length(this.F.vec[item].Credits.vec),"]: ");
+          for k=1:length(this.F.vec[item].Credits.vec)
+            if(toConsole)
+              println("      ♦ Credit Nº",k)
+              println("         Amount: ",this.P.vec[item].Credits.vec[k].Amount)
+              println("         InterestRates: ",this.P.vec[item].Credits.vec[k].InterestRates)
+              println("         CreditPayTime: ",this.P.vec[item].Credits.vec[k].CreditPayTime)
+              println("         AmountPaid: ",this.P.vec[item].Credits.vec[k].AmountPaid)
+              println("         ClientID: ",this.P.vec[item].Credits.vec[k].ClientID)
+              println("         LenderID: ",this.P.vec[item].Credits.vec[k].LenderID)
+            end
+          end
+        end
+    end
+
+    if(toConsole) println("\n▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼\n") end
+  end
+
     return this,this.K,this.N
   end
 end
