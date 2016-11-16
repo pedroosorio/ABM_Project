@@ -782,9 +782,8 @@ type SuperSystem
         if(this.P.vec[prod].Enabled == true)
           # Test if the numeraire is negative before the application of taxes
           if(this.P.vec[prod].Numeraire<0)
-            this.DeleteProducer(this.P.vec[prod].ID)
+            #Make a credit.
 
-            #Make a credit ???
           else
             if(this.P.vec[prod].Internal) #Only apply taxes to internal sector
               tax = this.P.vec[prod].numeraireToBeTaxed*this.C.taxPercentage;
@@ -795,8 +794,9 @@ type SuperSystem
               end
               #A producer can also be deleted if its numeraire becomes negative after taxes
               if(this.P.vec[prod].Numeraire<0)
-                this.DeleteProducer(this.P.vec[prod].ID)
-                #Make a credit ???
+                #Make a credit.
+
+
               else
                 @printf(f,"numeraires(%d,%d)=%.3f%s",this.P.vec[prod].ID,period,this.P.vec[prod].Numeraire,"\n");
               end
@@ -878,7 +878,7 @@ type SuperSystem
           println("► Bank ",this.F.vec[item].ID,":");
           println("    ♦Assets: ",this.F.vec[item].Assets);
           println("    ♦Liabilities: ",this.F.vec[item].Liabilities);
-          println("    ♦Credits[",length(this.F.vec[item].Credits.vec),"]: ");
+          #=println("    ♦Credits[",length(this.F.vec[item].Credits.vec),"]: ");
           for k=1:length(this.F.vec[item].Credits.vec)
             if(toConsole)
               println("      ♦ Credit Nº",k)
@@ -889,7 +889,7 @@ type SuperSystem
               println("         ClientID: ",this.P.vec[item].Credits.vec[k].ClientID)
               println("         LenderID: ",this.P.vec[item].Credits.vec[k].LenderID)
             end
-          end
+          end=#
         end
     end
 
@@ -904,16 +904,27 @@ type SuperSystem
             amountToPay = (this.P.vec[prod].Credits.vec[credit].Amount/this.P.vec[prod].Credits.vec[credit].CreditPayTime)+
                           ((this.P.vec[prod].Credits.vec[credit].Amount-this.P.vec[prod].Credits.vec[credit].AmountPaid)*
                           this.P.vec[prod].Credits.vec[credit].InterestRates);
-            this.P.vec[prod].Credits.vec[credit].AmountPaid += (this.P.vec[prod].Credits.vec[credit].Amount/
+
+            if(this.P.vec[prod].Numeraire-amountToPay>=0)
+              this.P.vec[prod].Credits.vec[credit].AmountPaid += (this.P.vec[prod].Credits.vec[credit].Amount/
                                                                 this.P.vec[prod].Credits.vec[credit].CreditPayTime);
-            #Effect in Client
-            this.P.vec[prod].Numeraire -= amountToPay
-            #Effect in Lender
+              #Effect in Client
+              this.P.vec[prod].Numeraire -= amountToPay
+              this.P.vec[prod].Liabilities -= amountToPay
+              #Effect in Lender
+              this.F.vec[this.P.vec[prod].Credits.vec[credit].LenderID].Assets -= amountToPay
+              this.F.vec[this.P.vec[prod].Credits.vec[credit].LenderID].Liabilities -= amountToPay
 
-            if(this.P.vec[prod].Credits.vec[credit].AmountPaid>=this.P.vec[prod].Credits.vec[credit].Amount)
-              #Delete credit
+              if(this.P.vec[prod].Credits.vec[credit].AmountPaid>=this.P.vec[prod].Credits.vec[credit].Amount)
+                  #Delete credit
+                  this.P.vec[prod].Credits.deleteContent(credit)
+              end
+            else
+              amountToPay = this.P.vec[prod].Numeraire
+              this.DeleteProducer(this.P.vec[prod].ID) #Agent goes bankrupt
+              this.F.vec[this.P.vec[prod].Credits.vec[credit].LenderID].Assets -= amountToPay
+              this.F.vec[this.P.vec[prod].Credits.vec[credit].LenderID].Liabilities -= amountToPay
             end
-
           end
         end
       end

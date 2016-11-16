@@ -290,14 +290,14 @@ type Bank
   ID::Int64
   Assets::Float64  #Assets as numeraire
   Liabilities::Float64  #Liabilities as numeraire
-  Credits::List{CreditContract} #List of credits done by the bank
+  #Credits::List{CreditContract} #List of credits done by the bank
 
   function Bank(id, assets, liabilities)
     this = new();
     this.ID = id;
     this.Assets = assets;
     this.Liabilities = liabilities;
-    this.Credits = List{CreditContract}(CreditContract)
+    #this.Credits = List{CreditContract}(CreditContract)
     return this
   end
 end

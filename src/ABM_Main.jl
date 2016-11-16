@@ -1,8 +1,9 @@
 include("ABM_System.jl")
-Pkg.add("PyPlot")
+
 using PyPlot
 x = linspace(0,2*pi,1000); y = sin(3*x + 4*cos(2*x))
 plot(x, y, color="red", linewidth=2.0, linestyle="--")
+
 ###################################################################################
 #Defines system's initialization file name : System.SystemID.json
 #Defines system's output file name : simulation.SystemID.txt
@@ -53,6 +54,8 @@ println("  ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼")
 println(" Simulation terminated");
 println("  ▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼ \n")
 #@printf(f,"@SIMULATION_END%s","\n");
+
+S.CheckSys(f,K,true);
 close(f)
 quit()
 

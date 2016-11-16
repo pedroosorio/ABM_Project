@@ -653,12 +653,15 @@ function InitP(ListP::List{Producer}, ListV::List{List{Rule}}, ListF::List{Bank}
 
               clientID = prod_id;
               ListP.vec[prod_id].Credits.addContent(CreditContract(amount,interestRates,creditPayTime,amountPaid,clientID,lenderID))
-              ListF.vec[lenderID].Credits.addContent(CreditContract(amount,interestRates,creditPayTime,amountPaid,clientID,lenderID))
+              #ListF.vec[lenderID].Credits.addContent(CreditContract(amount,interestRates,creditPayTime,amountPaid,clientID,lenderID))
 
               #Effect of this credit contract in the client(P) and the lender (F)
               # Client
               ListP.vec[prod_id].Numeraire += amount
+              ListP.vec[prod_id].Liabilities += amount
               # Bank
+              ListF.vec[lenderID].Assets += amount
+              ListF.vec[lenderID].Liabilities += amount
               #######################################
 
             catch error

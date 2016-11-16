@@ -31,8 +31,8 @@
     "Banks" : [
       {
         "ID" : 1,
-        "Assets" : 1000.0,
-        "Liabilities" : -1000.0
+        "Assets" : 0.0,
+        "Liabilities" : 0.0
       }
     ]
   },
