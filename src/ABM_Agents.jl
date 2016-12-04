@@ -1,6 +1,7 @@
 include("ABM_Types.jl") #includes Symbol,Rule and Generic List types
 using JSON
-
+export Controller,Producer
+export InitP, InitC, CheckRules
 ###################################################################################
 ###################################################################################
 #CONTROLLER AGENT
@@ -337,7 +338,7 @@ type Producer
 
     ######################################################
     ######################################################
-    this.atomicSale = function(Rules,Producers,consq,quant,producer,System,period) #this intends to an agent buy quant times the
+    this.atomicSale = function(Rules,Producers,consq,quant,producer,System,f,period) #this intends to an agent buy quant times the
       #consq item, by request, atomically
       if(producer==0) #This is the controller
         #println("Bought ",quant," item of ", consq," from Producer ",this.ID)

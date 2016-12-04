@@ -1,5 +1,5 @@
 include("ABM_Agents.jl")
-
+export SuperSystem
 ###################################################################################
 ###################################################################################
 type SuperSystem
@@ -384,7 +384,7 @@ type SuperSystem
                         end
                         println("Prod$prod buying $buyingFromProducer of $target from ",this.B.vec[shelf].Offers.vec[offers].Producer)
                         boughtTargets += buyingFromProducer
-                        this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,precedents.vec[products],buyingFromProducer,this.P.vec[prod].ID,this,period)
+                        this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,precedents.vec[products],buyingFromProducer,this.P.vec[prod].ID,this,f,period)
                         if(boughtTargets>=targetAmount)
                           break;
                         end
@@ -642,7 +642,7 @@ type SuperSystem
                     boughtTargets += buyingFromProducer
                     this.B.vec[shelf].Offers.vec[offers].Units -= buyingFromProducer
                     this.B.vec[shelf].Remaining -= buyingFromProducer
-                    this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,itemsToBuy.vec[item],buyingFromProducer,this.P.vec[prod].ID,this,period)
+                    this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,itemsToBuy.vec[item],buyingFromProducer,this.P.vec[prod].ID,this,f,period)
                     if(boughtTargets==targetAmount)
                       targetComplete = true
                       break
@@ -719,7 +719,7 @@ type SuperSystem
                 toDelete.addContent(offers)
               end
               #make the transaction
-              this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,target,buyingFromProducer,0,this,period)
+              this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,target,buyingFromProducer,0,this,f,period)
               if(boughtTargets==targetAmount)
                 targetComplete = true
                 break
