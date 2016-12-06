@@ -1,4 +1,7 @@
 include("ABM_Agents.jl")
+using PyPlot
+using Colors
+
 export SuperSystem
 ###################################################################################
 ###################################################################################
@@ -12,6 +15,14 @@ type SuperSystem
   F::List{Bank}           #List of Financial institutions (Banks)
   PricingList::List{StandardPriceCell}   #List of prices by Symbol
   ActiveProducers::Int64  # Current number of active producers in the super system
+
+  #Plotting data
+  AgentNumeraire::Matrix{Float64}
+  AgentOffers::Matrix{Float64}
+  AgentSales::Matrix{Float64}
+  AgentPurchases::Matrix{Float64}
+  AgentState::Matrix{Int8}
+  Taxes::Matrix{Float64}
 
   OutputProducersParameters::Function #Prints important producer configuration
   DeleteProducer::Function #Deletes a producer
@@ -37,6 +48,9 @@ type SuperSystem
   CheckSys::Function #Prints system information
   #File output functions
   PrintSteadyState::Function #Prints the steady state of each agent on the simulation file
+  PlotResults::Function #Function that plots simulation results
+  CreateCredit::Function #Function to create credit for a producer
+
   function SuperSystem(systemConfigFileName)
     this = new()
     cd(dirname(Base.source_path())); #Change current working directory
@@ -132,6 +146,15 @@ type SuperSystem
     this.N = InitP(this.P,this.V,this.F,0.0,this.K,this.N,Configuration,systemConfigFileName) #Initialize the Producers
     this.ActiveProducers = this.N;
     InitB(this.B,this.V) #Initialize the B* List
+
+    #Initialize plot data
+    this.AgentState = zeros(this.K,this.N);
+    this.AgentNumeraire = zeros(this.K,this.N);
+    this.Taxes = zeros(this.K,this.N);
+    this.AgentOffers = zeros(this.K,this.N);
+    this.AgentSales = zeros(this.K,this.N);
+    this.AgentPurchases = zeros(this.K,this.N+1);
+
     println("▬ System Initialized\n")
     #SYSTEM FUNCTIONS
    ###################################################################################
@@ -140,7 +163,7 @@ type SuperSystem
     end
    ###################################################################################
    ###################################################################################
-    this.NecessaryRulesConsumption = function(f,period)
+    this.NecessaryRulesConsumption = function(period)
       producersDeleted = 0;
       for prod = 1:length(this.V.vec) # Run through every rule of every producer
         if(this.P.vec[prod].Enabled)
@@ -189,11 +212,11 @@ type SuperSystem
         if(success==false)
           #Delete the producer
           this.DeleteProducer(prod)
-          @printf(f,"live(%d,%d)=0%s",this.P.vec[prod].ID,period,"\n");
+          this.AgentState[period,this.P.vec[prod].ID] = 0;
           #println("Producer",this.P.vec[prod].ID," Deleted")
           this.ActiveProducers -= 1
         else
-          @printf(f,"live(%d,%d)=1%s",this.P.vec[prod].ID,period,"\n");
+          this.AgentState[period,this.P.vec[prod].ID] = 1;
           #println("Producer",this.P.vec[prod].ID," Successful")
           success = false
         end
@@ -201,8 +224,6 @@ type SuperSystem
       end
 
       if(this.ActiveProducers==0)
-        @printf(f,"@SUPERSYSTEM_DEAD%s","\n");
-        @printf(f,"@SIMULATION_END%s","\n");
         println(" ↓ All producers deleted ... Deleting SuperSystem")
         quit()
       end
@@ -267,7 +288,7 @@ type SuperSystem
     end
   ###################################################################################
   ###################################################################################
-    this.ProductionAnnouncement = function(f,period)
+    this.ProductionAnnouncement = function(period)
       for prod = 1:length(this.V.vec) # Run through every rule of every producer
         if(this.P.vec[prod].Enabled)
           for rule = 1:length(this.V.vec[prod].vec)
@@ -312,7 +333,7 @@ type SuperSystem
                 #in the BList
                 #Consult Standard price in Systems price table
                 this.addOffer(consq.Symbol,available,this.getStandardPrice(consq.Symbol,period),this.P.vec[prod].ID)
-                @printf(f,"offers(%d,%d)=%d%s",this.P.vec[prod].ID,period,available,"\n");
+                this.AgentOffers[period,this.P.vec[prod].ID] += available
                 #println("Announced ",available, " items of ", consq.Symbol)
                 this.P.vec[prod].setToProduction(this.V,consq.Symbol,available)#Set the inputstore item for production
                 #println("Producer",this.P.vec[prod].ID," Successful in Announcement\n")
@@ -560,7 +581,7 @@ type SuperSystem
     end
   ###################################################################################
   ###################################################################################
-    this.BuyItems = function(f,period)
+    this.BuyItems = function(period)
       target::AbstractString = ""
       for prod = 1:length(this.P.vec)
         if(this.P.vec[prod].Enabled)
@@ -642,7 +663,7 @@ type SuperSystem
                     boughtTargets += buyingFromProducer
                     this.B.vec[shelf].Offers.vec[offers].Units -= buyingFromProducer
                     this.B.vec[shelf].Remaining -= buyingFromProducer
-                    this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,itemsToBuy.vec[item],buyingFromProducer,this.P.vec[prod].ID,this,f,period)
+                    this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,itemsToBuy.vec[item],buyingFromProducer,this.P.vec[prod].ID,this,period)
                     if(boughtTargets==targetAmount)
                       targetComplete = true
                       break
@@ -694,7 +715,7 @@ type SuperSystem
     end
   ###################################################################################
   ###################################################################################
-    this.ControllerAction = function(f,period)
+    this.ControllerAction = function(period)
       completedGoals = 0
       for goal=1:length(this.C.Goals.vec)
         target = this.C.Goals.vec[goal].Symbol
@@ -719,7 +740,7 @@ type SuperSystem
                 toDelete.addContent(offers)
               end
               #make the transaction
-              this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,target,buyingFromProducer,0,this,f,period)
+              this.P.vec[this.B.vec[shelf].Offers.vec[offers].Producer].atomicSale(this.V,this.P,target,buyingFromProducer,0,this,period)
               if(boughtTargets==targetAmount)
                 targetComplete = true
                 break
@@ -777,34 +798,32 @@ type SuperSystem
   ###################################################################################
   ###################################################################################
     #File output functions
-  this.ApplyTaxes = function(f,period) #Controller applies taxes to every producer if applicable
+  this.ApplyTaxes = function(period) #Controller applies taxes to every producer if applicable
     for prod = 1:length(this.P.vec) # Report of producers current numerarire
         if(this.P.vec[prod].Enabled == true)
           # Test if the numeraire is negative before the application of taxes
           if(this.P.vec[prod].Numeraire<0)
             #Make a credit.
+            #Credit pay time is defined as K-Current period
+            #Interest Rates as 5%
+            this.CreateCredit(this.P.vec[prod].ID,1,abs(this.P.vec[prod].Numeraire)*this.P.vec[prod].CreditAmountRate,5,this.K-period)
+          end
 
-          else
-            if(this.P.vec[prod].Internal) #Only apply taxes to internal sector
-              tax = this.P.vec[prod].numeraireToBeTaxed*this.C.taxPercentage;
-              #Multiply the taxable amount for the pre-regultaed taxing percentage of the controller
-              if(tax>0.0) #if the tax is positive, apply taxing
-                this.P.vec[prod].Numeraire -= tax;
-                @printf(f,"taxes(%d,%d)=%.3f%s",this.P.vec[prod].ID,period,tax,"\n");
-              end
-              #A producer can also be deleted if its numeraire becomes negative after taxes
-              if(this.P.vec[prod].Numeraire<0)
-                #Make a credit.
-
-
-              else
-                @printf(f,"numeraires(%d,%d)=%.3f%s",this.P.vec[prod].ID,period,this.P.vec[prod].Numeraire,"\n");
-              end
-            else
-              @printf(f,"numeraires(%d,%d)=%.3f%s",this.P.vec[prod].ID,period,this.P.vec[prod].Numeraire,"\n");
+          if(this.P.vec[prod].Internal) #Only apply taxes to internal sector
+            tax = this.P.vec[prod].numeraireToBeTaxed*this.C.taxPercentage;
+            #Multiply the taxable amount for the pre-regultaed taxing percentage of the controller
+            if(tax>0.0) #if the tax is positive, apply taxing
+              this.P.vec[prod].Numeraire -= tax;
+              this.Taxes[period,this.P.vec[prod].ID] = tax;
+            end
+            #A producer can also be deleted if its numeraire becomes negative after taxes
+            if(this.P.vec[prod].Numeraire<0)
+              #Make a credit.
+              this.CreateCredit(this.P.vec[prod].ID,1,abs(this.P.vec[prod].Numeraire)*this.P.vec[prod].CreditAmountRate,5,this.K-period)
             end
           end
-        end
+          this.AgentNumeraire[period,this.P.vec[prod].ID] = this.P.vec[prod].Numeraire;
+      end
     end
   end
   ###################################################################################
@@ -897,7 +916,7 @@ type SuperSystem
   end
   ###################################################################################
   ###################################################################################
-    this.ProcessCredit = function(f,period)
+    this.ProcessCredit = function(period)
       for prod = 1:length(this.P.vec)
         if(this.P.vec[prod].Enabled)
           for credit=1:length(this.P.vec[prod].Credits.vec)
@@ -929,6 +948,118 @@ type SuperSystem
         end
       end
     end
+  ###################################################################################
+  ###################################################################################
+
+  this.PlotResults = function() #Prints the steady state objectives of each agent on the simulation file
+    colors = Colors.distinguishable_colors(this.N+1)
+    ## ################ PRODUCERS FIGURE
+    figure(1)
+    clf()
+    subplots_adjust(hspace=.5)
+    x = 1:this.K
+    suptitle("Producer's Information")
+    grid("on")
+
+    subplot(411)
+    title("Producer's State",fontsize = "small")
+    for n=1:this.N
+      c = colors[n]
+      p = plot(x, this.AgentState[((this.K)*(n-1)+1):((this.K)*(n))], color=(c.r,c.g,c.b), linewidth=2.0, linestyle="-", label="Prod$n")
+    end
+    margins(y=0.1)
+    legend(loc="upper left", bbox_to_anchor=(0.98, 1.0),fancybox=true, shadow=true,fontsize = "x-small")
+    ylabel("State",fontsize = "small")
+
+    subplot(412)
+    title("Producer's Numeraire",fontsize = "small")
+    for n=1:this.N
+      c = colors[n]
+      p = plot(x, this.AgentNumeraire[((this.K)*(n-1)+1):((this.K)*(n))], color=(c.r,c.g,c.b), linewidth=2.0, linestyle="-", label="Prod$n")
+    end
+    margins(y=0.1)
+    legend(loc="upper left", bbox_to_anchor=(0.98, 1.0),fancybox=true, shadow=true,fontsize = "x-small")
+    ylabel("Units of Numeraire",fontsize = "small")
+
+    subplot(413)
+    title("Producer's Offers",fontsize = "small")
+    for n=1:this.N
+      c = colors[n]
+      p = plot(x, this.AgentOffers[((this.K)*(n-1)+1):((this.K)*(n))], color=(c.r,c.g,c.b), linewidth=2.0, linestyle="-", label="Prod$n")
+    end
+    margins(y=0.1)
+    legend(loc="upper left", bbox_to_anchor=(0.98, 1.0),fancybox=true, shadow=true,fontsize = "x-small")
+    ylabel("Units of Product",fontsize = "small")
+
+
+    subplot(414)
+    title("Producer's Sales",fontsize = "small")
+    for n=1:this.N
+      c = colors[n]
+      p = plot(x, this.AgentSales[((this.K)*(n-1)+1):((this.K)*(n))], color=(c.r,c.g,c.b), linewidth=2.0, linestyle="-", label="Prod$n")
+    end
+    margins(y=0.1)
+    legend(loc="upper left", bbox_to_anchor=(0.98, 1.0),fancybox=true, shadow=true,fontsize = "x-small")
+    ylabel("Units of Products",fontsize = "small")
+    xlabel("Period")
+
+    ## ################ CONTROLLER FIGURE
+    figure(2)
+    clf()
+    subplots_adjust(hspace=.5)
+    suptitle("Controller Information")
+
+    subplot(311)
+    title("Applied Taxes",fontsize = "small")
+    for n=1:this.N
+      c = colors[n]
+      p = plot(x, this.Taxes[((this.K)*(n-1)+1):((this.K)*(n))], color=(c.r,c.g,c.b), linewidth=2.0, linestyle="-", label="Prod$n")
+    end
+    margins(y=0.1)
+    legend(loc="upper left", bbox_to_anchor=(0.98, 1.0),fancybox=true, shadow=true,fontsize = "x-small")
+    ylabel("Taxed Numeraire",fontsize = "small")
+
+    subplot(312)
+    title("Agent Purchases",fontsize = "small")
+    for n=1:(this.N+1)
+      c = colors[n]
+      if(n<=this.N)
+        p = plot(x, this.AgentPurchases[((this.K)*(n-1)+1):((this.K)*(n))], color=(c.r,c.g,c.b), linewidth=2.0, linestyle="-", label="Prod$n")
+      else
+        p = plot(x, this.AgentPurchases[((this.K)*(n-1)+1):((this.K)*(n))], color=(c.r,c.g,c.b), linewidth=2.0, linestyle="-", label="Controller")
+      end
+    end
+    margins(y=0.1)
+    legend(loc="upper left", bbox_to_anchor=(0.98, 1.0),fancybox=true, shadow=true,fontsize = "x-small")
+    ylabel("Units of Product",fontsize = "small")
+
+    subplot(313)
+    colors_prods = Colors.distinguishable_colors(length(this.PricingList.vec))
+    title("Product Prices",fontsize = "small")
+    for p=1:length(this.PricingList.vec)
+      c = colors_prods[p]
+      p = plot(x, this.PricingList.vec[p].PriceList.vec, color=(c.r,c.g,c.b), linewidth=2.0, linestyle="-", label=this.PricingList.vec[p].Symbol)
+    end
+    margins(y=0.1)
+    legend(loc="upper left", bbox_to_anchor=(0.98, 1.0),fancybox=true, shadow=true,fontsize = "x-small")
+    ylabel("Units of Numeraire",fontsize = "small")
+
+    xlabel("Period")
+  end
+  ###################################################################################
+  ###################################################################################
+  this.CreateCredit = function(agent_id, bank_id, amount, interest_rates, pay_time) #Function to create credit for producers
+    #Assess if is or is not worth of a credit
+    this.this.P.vec[agent_id].Credits.addContent(CreditContract(amount,interest_rates,pay_time,0.0,agent_id,bank_id));
+    #Effect of this credit contract in the client(P) and the lender (F)
+    # Client
+    this.P.vec[agent_id].Numeraire += amount
+    this.P.vec[agent_id].Liabilities += amount
+    # Bank
+    this.F.vec[lenderID].Assets += amount
+    this.F.vec[lenderID].Liabilities += amount
+    #######################################
+  end
   ###################################################################################
   ###################################################################################
     return this,this.K,this.N

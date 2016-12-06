@@ -1,5 +1,4 @@
-
-export List, Symbol, Rule, StandardPriceCell, ProductOffer, BList_Cell, CreditContract, BuyingGoal, Bank
+export List, Symbol, Rule, StandardPriceCell, ProductOffer, BList_Cell, CreditContract, BuyingGoal, Bank,ControllerGoal
 
 ################## LIST TYPE ##################
 ###############################################

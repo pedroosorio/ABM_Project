@@ -1,4 +1,5 @@
 include("ABM_Types.jl") #includes Symbol,Rule and Generic List types
+
 using JSON
 export Controller,Producer
 export InitP, InitC, CheckRules
@@ -87,7 +88,7 @@ type Producer
   Credits::List{CreditContract} #List of credits contracted
   Assets::Float64  #Assets as numeraire
   Liabilities::Float64  #Liabilities as numeraire
-
+  CreditAmountRate::Float64 #Defines the percentage of negative numeraire to be asked as credit
   InputStore::List{Symbol} # Input store of the agent
   OutputStore::List{Symbol} # Output store of the agent
 
@@ -127,6 +128,7 @@ type Producer
     this.Internal = internal
     this.Assets = 0.0
     this.Liabilities = 0.0
+    this.CreditAmountRate = 1.0
     ######################################################
     ######################################################
     this.existsInInputStore = function(pre)
@@ -338,12 +340,12 @@ type Producer
 
     ######################################################
     ######################################################
-    this.atomicSale = function(Rules,Producers,consq,quant,producer,System,f,period) #this intends to an agent buy quant times the
+    this.atomicSale = function(Rules,Producers,consq,quant,producer,System,period) #this intends to an agent buy quant times the
       #consq item, by request, atomically
       if(producer==0) #This is the controller
         #println("Bought ",quant," item of ", consq," from Producer ",this.ID)
-        @printf(f,"buy_%s(6,%d)=%d%s",consq,period,quant,"\n"); #Controller index must be 6 because Scilab does not allow for 0
-        #@printf(f,"sale_%s(%d,%d)=%d%s",consq,this.ID,period,quant,"\n");
+        System.AgentPurchases[period,System.N+1] += quant
+        System.AgentSales[period,this.ID] += quant
         for rule=1:length(Rules.vec[this.ID].vec) #Remove the desired precedents
           if(Rules.vec[this.ID].vec[rule].Consequent.Symbol == consq)
             pre = Rules.vec[this.ID].vec[rule].Antecedent
@@ -358,8 +360,8 @@ type Producer
         this.numeraireToBeTaxed += paid;
       else
         #println("Bought ",quant," item of ", consq.Symbol," from Producer ",this.ID)
-        @printf(f,"buy_%s(%d,%d)=%d%s",consq.Symbol,Producers.vec[producer].ID,period,quant,"\n");
-        #@printf(f,"sale_%s(%d,%d)=%d%s",consq.Symbol,this.ID,period,quant,"\n");
+        System.AgentPurchases[period,Producers.vec[producer].ID] += quant
+        System.AgentSales[period,this.ID] += quant
         for rule=1:length(Rules.vec[this.ID].vec) #Remove the desired precedents
           if(Rules.vec[this.ID].vec[rule].Consequent.Symbol == consq.Symbol)
             pre = Rules.vec[this.ID].vec[rule].Antecedent
