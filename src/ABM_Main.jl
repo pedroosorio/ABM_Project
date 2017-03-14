@@ -1,4 +1,4 @@
-using ABM
+include("ABM_System.jl")
 ###################################################################################
 #Defines system's initialization file name : System.SystemID.json
 #Defines system's output file name : simulation.SystemID.txt

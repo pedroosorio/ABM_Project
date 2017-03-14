@@ -1,0 +1,355 @@
+{
+  "System": {
+    "SimulationProperties": [
+      {
+        "K": 10,
+        "N": 5
+      }
+    ],
+    "Pricing": [
+      {
+        "Symbol": "A",
+        "Price": 0.625
+      },
+      {
+        "Symbol": "B",
+        "Price": 3.4166666666666665
+      },
+      {
+        "Symbol": "D",
+        "Price": 16.75
+      },
+      {
+        "Symbol": "E",
+        "Price": 1.0
+      },
+      {
+        "Symbol": "F",
+        "Price": 2.625
+      }
+    ],
+    "Banks" : [
+      {
+        "ID" : 1,
+        "Assets" : 0.0,
+        "Liabilities" : 0.0
+      }
+    ]
+  },
+  "Controller": {
+    "ControllerParameters": [
+      {
+        "TaxingPercentage": 1
+      }
+    ],
+    "ControllerGoals": [
+      {
+        "Symbol": "D",
+        "Min": 5,
+        "Nom": 10,
+        "Max": 10,
+        "Price": 16.75
+      }
+    ]
+  },
+  "Producers": [
+    {
+      "Id": 1,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "*",
+          "InAmounts": "0",
+          "OutString": "A",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 10,
+          "Nom": 20,
+          "Max": 20,
+          "Perturbations" :[
+            {
+               "StartPeriod": 1,
+               "EndPeriod": 1,
+               "Percentage": 1.0
+            }
+          ]
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2,
+          "Perturbations" :[]
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4,
+          "Perturbations" :[]
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 2
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4
+        }
+      ],
+      "Output_Store": [],
+      "Credits": [
+        {
+           "Amount" : 50,
+           "InterestRates" : 5.0,
+           "CreditPayTime" : 10,
+           "AmountPaid" : 0.0,
+           "LenderID" : 1
+        }
+      ]
+
+    },
+    {
+      "Id": 2,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "E",
+          "InAmounts": "3",
+          "OutString": "B",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 15,
+          "Nom": 30,
+          "Max": 30,
+          "Perturbations" :[]
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2,
+          "Perturbations" :[]
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4,
+          "Perturbations" :[]
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 92
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4
+        }
+      ],
+      "Output_Store": [],
+      "Credits": []
+    },
+    {
+      "Id": 3,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "A,B,E",
+          "InAmounts": "2,3,4",
+          "OutString": "D",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 5,
+          "Nom": 10,
+          "Max": 10,
+          "Perturbations" :[]
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2,
+          "Perturbations" :[]
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4,
+          "Perturbations" :[]
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 42
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4
+        },
+        {
+          "Symbol": "A",
+          "Amount": 20
+        },
+        {
+          "Symbol": "B",
+          "Amount": 30
+        }
+      ],
+      "Output_Store": [],
+      "Credits": []
+    },
+    {
+      "Id": 4,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "*",
+          "InAmounts": "0",
+          "OutString": "E",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 90,
+          "Nom": 180,
+          "Max": 180,
+          "Perturbations" :[]
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2,
+          "Perturbations" :[]
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4,
+          "Perturbations" :[]
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 2
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4
+        }
+      ],
+      "Output_Store": [],
+      "Credits": []
+    },
+    {
+      "Id": 5,
+      "Numeraire": 100,
+      "Sector": "Internal",
+      "Rules": [
+        {
+          "InString": "E",
+          "InAmounts": "2",
+          "OutString": "F",
+          "OutAmounts": 1,
+          "Multiplier": 1,
+          "Type": "a",
+          "Min": 10,
+          "Nom": 20,
+          "Max": 20,
+          "Perturbations" :[]
+        },
+        {
+          "InString": "E",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 1,
+          "Nom": 2,
+          "Max": 2,
+          "Perturbations" :[]
+        },
+        {
+          "InString": "F",
+          "InAmounts": "1",
+          "OutString": "''",
+          "OutAmounts": 0,
+          "Multiplier": 1,
+          "Type": "d",
+          "Min": 2,
+          "Nom": 4,
+          "Max": 4,
+          "Perturbations" :[]
+        }
+      ],
+      "Input_Store": [
+        {
+          "Symbol": "E",
+          "Amount": 42
+        },
+        {
+          "Symbol": "F",
+          "Amount": 4
+        }
+      ],
+      "Output_Store": [],
+      "Credits": []
+    }
+  ]
+}
